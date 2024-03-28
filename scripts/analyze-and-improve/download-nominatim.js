@@ -1,14 +1,14 @@
 const fs = require('fs')
 const {readCsv} = require("./readCsv")
-const {convertCoordinates} = require("./coordinatesConverter")
+const {convertToDecimal} = require("./coordinatesConverter")
 
 async function start() {
     const csvDatabase = await readCsv()
     for (const unlocode of Object.keys(csvDatabase)) {
         const entry = csvDatabase[unlocode]
 
-        const convertedCoordinates = convertCoordinates(entry.coordinates)
-        if (convertedCoordinates && entry.country === "IT") {
+        const decimalCoordinates = convertToDecimal(entry.coordinates)
+        if (decimalCoordinates && entry.country === "IT") {
             console.log(`Downloading ${unlocode}`)
             const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
             let nominatimQuery = ogNominatimQuery

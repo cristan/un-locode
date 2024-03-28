@@ -1,5 +1,5 @@
 const coordinatesRegex = /^(\d{2})(\d{2})([NS])\s+(\d{3})(\d{2})([EW])$/
-function convertCoordinates(input) {
+function convertToDecimal(input) {
     if (!input) {
         return ""
     }
@@ -22,13 +22,16 @@ function convertCoordinates(input) {
         const decimalLon = `${lonDirection === 'W' ? "-" : ""}${(lonDegrees + (lonMinutes / 60)).toFixed(5)}`
 
         // Return the result as an object
-        return `${decimalLat},${decimalLon}`
+        return {
+            latitude: decimalLat,
+            longitude: decimalLon
+        };
     } else {
         console.warn(`Invalid coordinate format ${input}`)
-        return ""
+        return undefined
     }
 }
 
 module.exports = {
-    convertCoordinates
+    convertToDecimal
 }
