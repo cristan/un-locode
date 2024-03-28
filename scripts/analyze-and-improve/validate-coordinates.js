@@ -1,5 +1,5 @@
-const {readCsv} = require("./readCsv");
-const {convertToDecimal} = require("./coordinatesConverter");
+const {readCsv} = require("./util/readCsv");
+const {convertToDecimal} = require("./util/coordinatesConverter");
 
 async function validateCoordinates() {
     const csvDatabase = await readCsv()
