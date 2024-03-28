@@ -1,3 +1,5 @@
+This is a fork of https://github.com/datasets/un-locode with the aim of improving the quality of the data, especially the coordinates.
+
 The United Nations Code for Trade and Transport Locations is a code list mantained by UNECE, United Nations agency, to facilitate trade.
 
 ## Data
