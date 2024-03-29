@@ -27,7 +27,7 @@ function convertToDecimal(input) {
             longitude: decimalLon
         };
     } else {
-        console.warn(`Invalid coordinate format ${input}`)
+        // console.warn(`Invalid coordinate format ${input}`)
         return undefined
     }
 }
