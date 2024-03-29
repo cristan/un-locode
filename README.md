@@ -13,3 +13,9 @@ Data comes from the [UNECE page](http://www.unece.org/cefact/locode/welcome.html
 ## License
 
 All unlocode data is licensed under the [ODC Public Domain Dedication and Licence (PDDL)](http://opendatacommons.org/licenses/pddl/1-0/).
+
+### Nominatim data
+ODbL 1.0. http://osm.org/copyright
+
+### All other contents in this repo
+Public domain
