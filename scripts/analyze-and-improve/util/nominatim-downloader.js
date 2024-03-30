@@ -6,7 +6,7 @@ async function downloadFromNominatimIfNeeded(entry) {
     const region = entry.subdivisionCode;
     let byRegion = false
     if (region) {
-        nominatimQuery += `&state=${encodeURI(region)}`
+        nominatimQuery += `&state=${entry.country}-${region}`
         byRegion = true
     }
 

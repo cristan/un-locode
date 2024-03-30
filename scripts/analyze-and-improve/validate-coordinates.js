@@ -6,7 +6,7 @@ const {downloadByCityIfNeeded} = require("./util/nominatim-downloader");
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 // TODO: ITPSU.
 async function validateCoordinates() {
-    console.debug = function() {};
+    // console.debug = function() {};
 
     const csvDatabase = await readCsv()
 
@@ -14,7 +14,7 @@ async function validateCoordinates() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "IT") {
+        if (!decimalCoordinates || entry.country !== "CN") {
             continue
         }
 
@@ -31,19 +31,16 @@ async function validateCoordinates() {
         const scrapeType = nominatimData.scrapeType
         const nominatimResult = nominatimData.result
 
-        const lat = nominatimResult[0].lat;
-        const lon = nominatimResult[0].lon;
-
-        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, lat, lon));
+        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
 
         if (distance > 100) {
             let nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
             if (scrapeType === "byRegion") {
-                nominatimQuery += `&state=${encodeURI(entry.subdivisionCode)}`
+                nominatimQuery += `&state=${entry.country}-${entry.subdivisionCode}`
             }
 
             if (scrapeType === "byRegion" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
-                throw new Error(`${unlocode} has unexpected region stuff going on`)
+                throw new Error(`https://unlocode.info/${unlocode} has unexpected region stuff going on. ${nominatimQuery}`)
             }
 
             if (!entry.subdivisionCode) {
@@ -91,7 +88,6 @@ async function validateCoordinates() {
 
                     if (closestDistance < 25) {
                         const detectedSubdivisionCode = closestInAnyRegion.subdivisionCode
-                        const detectedCoordinates = convertToUnlocode(closestInAnyRegion.lat, closestInAnyRegion.lon)
                         let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
                         if (nominatimResult.length === 1) {
                             message += `${convertToUnlocode(nominatimResult[0].lat, nominatimResult[0].lon)} (${closestInAnyRegion.sourceUrl}).`
@@ -100,18 +96,17 @@ async function validateCoordinates() {
                         }
                         console.log(message)
                         console.debug(`Query which also searches by subdivision: ${nominatimQuery}\n`)
-                    } else if (nominatimResult.length === 1) {
+                    } else {
                         // Nothing close found when searching for any region either. The location is probably just wrong.
                         if (entry.subdivisionCode !== nominatimResult[0].subdivisionCode) {
                             throw new Error(`${unlocode} This shouldn't be possible`)
                         }
 
-                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): Coordinates (${entry.coordinates}) should be changed to ${convertToUnlocode(lat, lon)}. (in decimal: ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon}). Source: ${nominatimResult[0].sourceUrl}`)
+                        const options = nominatimResult.map(nm => `${convertToUnlocode(nm.lat, nm.lon)} (${nm.lat}, ${nm.lon}) source: ${nm.sourceUrl}`)
+                        const allOptions = Array.from(options).join(' or ')
+
+                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`)
                         console.debug(`Found via ${nominatimQuery}\n`)
-                    } else {
-                        const message = `https://unlocode.info/${unlocode}: Not yet thought out case encountered. ${nominatimQuery}`;
-                        // console.warn(message)
-                        throw new Error(message)
                     }
                 }
             }
