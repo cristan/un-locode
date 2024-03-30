@@ -8,11 +8,23 @@ async function getNominatimData(unlocode) {
     const nominatimResult = nominatimData.result
 
     // Boundaries aren't places. Put at the bottom for now.
-    const boundaries = nominatimResult.filter(n => n.category === "boundary")
-    // There are other categories like landuse.
-    const everythingElse = nominatimResult.filter(n => n.category !== "boundary")
+    // Categories can be place, boundary, landuse, waterway, natural, mountain_pass, leisure
 
-    return {scrapeType: nominatimData.scrapeType, result: everythingElse.concat(boundaries)}
+    // For now, we first return places, then boundaries, then everything else
+    const places = nominatimResult.filter(n => n.category === "place")
+    const boundaries = nominatimResult.filter(n => n.category === "boundary")
+    const everythingElse = nominatimResult.filter(n => n.category !== "place" && n.category !== "boundary")
+
+    const sortedByCategory = places.concat(boundaries).concat(everythingElse)
+
+    // The isolated dwelling tag is used for named places that are smaller than a hamlet - no more than a few buildings
+    // Assume there are no unlocodes for places that small.
+    const withoutUselessEntries = sortedByCategory.filter(n => n.addresstype !== "isolated_dwelling")
+    if (withoutUselessEntries.length === 0) {
+        return undefined
+    }
+
+    return {scrapeType: nominatimData.scrapeType, result: withoutUselessEntries}
 }
 
 async function loadNominatimData(unlocode) {
