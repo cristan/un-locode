@@ -27,16 +27,11 @@ async function getNominatimData(unlocode) {
     }
 }
 
-async function getRegionCode(unlocode) {
-    let nominatimData = await getNominatimData(unlocode);
-    if (nominatimData) {
-        const resultElement = nominatimData.result[0];
-        return resultElement.address["ISO3166-2-lvl6"]?.substring(3)// ?? resultElement.address["ISO3166-2-lvl4"]?.substring(3)
-    }
-    return undefined
+function getSubdivisionCode(nominatimElement) {
+    return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl4"]?.substring(3)
 }
 
 module.exports = {
     getNominatimData,
-    getRegionCode
+    getSubdivisionCode
 }
