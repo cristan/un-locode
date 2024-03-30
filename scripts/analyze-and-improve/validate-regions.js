@@ -1,5 +1,5 @@
 const {readCsv, readSubdivisionData} = require("./util/readCsv");
-const {getSubdivisionCode, getNominatimData} = require("./util/nominatim-loader");
+const {getNominatimData} = require("./util/nominatim-loader");
 const {downloadFromNominatimIfNeeded} = require("./util/nominatim-downloader");
 
 async function createReport() {
@@ -18,7 +18,7 @@ async function createReport() {
             const nominatimData = (await getNominatimData(unlocode))?.result
             if (nominatimData) {
                 const subdivisionCodes = nominatimData.map(nd => {
-                    const nominatimRegionCode = getSubdivisionCode(nd)
+                    const nominatimRegionCode = nd.subdivisionCode
                     const mappedSubdivision = subdivisions[entry.country + '|' + nominatimRegionCode]
                     return `${nominatimRegionCode} (${mappedSubdivision})`
                 })

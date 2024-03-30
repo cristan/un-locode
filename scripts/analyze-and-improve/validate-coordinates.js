@@ -1,6 +1,6 @@
 const {readCsv} = require("./util/readCsv")
 const {convertToDecimal, convertToUnlocode} = require("./util/coordinatesConverter")
-const {getNominatimData, getSubdivisionCode, getNominatimDataByCity} = require("./util/nominatim-loader")
+const {getNominatimData, getNominatimDataByCity} = require("./util/nominatim-loader")
 const {downloadByCityIfNeeded} = require("./util/nominatim-downloader");
 
 async function validateCoordinates() {
@@ -36,16 +36,13 @@ async function validateCoordinates() {
 
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, lat, lon));
 
-        // TODO: when there's no subdivisionCode and there are more than 1 subdivisions in the nominatim results, suggest setting the region to the one of the closest nominatim entry
-        //  if that's within 25 km + the diameter of the bounding box / 2
-
         if (distance > 100) {
             let nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
             if (scrapeType === "byRegion") {
-                nominatimQuery += `&state=${encodeURI(state)}`
+                nominatimQuery += `&state=${encodeURI(entry.subdivisionCode)}`
             }
 
-            if (scrapeType === "byRegion" && getSubdivisionCode(nominatimResult[0]) !== entry.subdivisionCode) {
+            if (scrapeType === "byRegion" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
                 throw new Error(`${unlocode} has unexpected region stuff going on`)
             }
 
@@ -55,12 +52,12 @@ async function validateCoordinates() {
                     return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
                 })
                 if (closeResults.length !== 0) {
-                    const subdivisionCodes = closeResults.map(nd => getSubdivisionCode(nd))
+                    const subdivisionCodes = closeResults.map(nd => nd.subdivisionCode)
                     const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
                     const extraLog = Array.from(uniqueSubdivisionCodes).join(' or ')
                     let toLog = `https://unlocode.info/${unlocode}: (${entry.city}): There are ${nominatimResult.length} different results for ${entry.city} in ${entry.country}. Let's set the region to ${extraLog} to avoid the confusion.`
                     if (closeResults.length === 1) {
-                        toLog += ` Source: https://www.openstreetmap.org/${closeResults[0].osm_type}/${closeResults[0].osm_id}`
+                        toLog += ` Source: ${closeResults[0].sourceUrl}`
                     }
                     console.log(toLog)
                 } else {
@@ -68,36 +65,43 @@ async function validateCoordinates() {
                     console.log(`HALP! I don't know what to do with ${unlocode}`)
                 }
             }
-            else if (scrapeType === "byCity" && getSubdivisionCode(nominatimResult[0]) !== entry.subdivisionCode) {
-                const subdivisionCodes = nominatimResult.map(nd => getSubdivisionCode(nd))
+            else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
+                const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
                 const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
             } else {
                 // TODO: fix ITAN2: (Antignano). The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
-                const allInCorrectRegion = nominatimResult.every(n => getSubdivisionCode(n) === entry.subdivisionCode)
+                const allInCorrectRegion = nominatimResult.every(n => n.subdivisionCode === entry.subdivisionCode)
                 if (scrapeType === "byRegion" && allInCorrectRegion) {
-                    // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
-                    // This means that either the coordinates are wrong, or the region is wrong.
-                    // Example: ITAN2
                     await downloadByCityIfNeeded(entry)
                     const nominatimDataByCity = getNominatimDataByCity(unlocode).result
                     const closeInAnyRegion = nominatimDataByCity.filter(n => {
                         return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
                     })
 
-                    if (closeInAnyRegion.length !== 0) {
+                    if (closeInAnyRegion.length === 1 && nominatimResult.length === 1) {
+                        // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
+                        // This means that either the coordinates are wrong, or the region is wrong.
+                        // Example: ITAN2
+
                         const detected = closeInAnyRegion[0]
-                        const detectedSubdivisionCode = getSubdivisionCode(detected)
+                        const detectedSubdivisionCode = detected.subdivisionCode
                         const detectedCoordinates = convertToUnlocode(detected.lat, detected.lon)
-                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${detected.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to ${detectedCoordinates}.`)
+                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${detected.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to ${detectedCoordinates} (${detected.sourceUrl}).`)
+                        console.debug(`Query which also searches by subdivision: ${nominatimQuery}\n`)
+                    } else if (closeInAnyRegion.length === 0 && nominatimResult.length === 1) {
+                        // Nothing close found when searching for any region either. The location is probably just wrong.
+                        if (entry.subdivisionCode !== nominatimResult[0].subdivisionCode) {
+                            throw new Error(`${unlocode} This shouldn't be possible`)
+                        }
+
+                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): Coordinates (${entry.coordinates}) should be changed to ${convertToUnlocode(lat, lon)}. (In decimal: ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon}). Source: ${nominatimResult[0].sourceUrl}`)
+                        console.debug(`Found via ${nominatimQuery}\n`)
                     } else {
-                        console.log(`TODO: not yet thought out case encountered at ${unlocode}`)
+                        console.log(`https://unlocode.info/${unlocode}: Not yet thought out case encountered`)
                     }
                 }
-
-                console.log(`https://unlocode.info/${unlocode}: (${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
             }
-
         }
     }
 }
