@@ -1,4 +1,5 @@
 const fs = require('fs')
+const {getDistanceFromLatLonInKm} = require("./coordinatesConverter");
 
 async function getNominatimData(unlocode) {
     const nominatimData = await loadNominatimData(unlocode)
@@ -62,16 +63,25 @@ function filterOutUselessEntries(nominatimResult) {
     // Boundaries aren't places. Put at the bottom for now.
     // Categories can be place, boundary, landuse, waterway, natural, mountain_pass, leisure
 
-    // For now, we first return places, then boundaries, then everything else
-    const places = nominatimResult.filter(n => n.category === "place")
-    const boundaries = nominatimResult.filter(n => n.category === "boundary")
-    const everythingElse = nominatimResult.filter(n => n.category !== "place" && n.category !== "boundary")
-
-    const sortedByCategory = places.concat(boundaries).concat(everythingElse)
+    // Filter out anything which isn't a place or a boundary
+    const filteredByCategory = nominatimResult.filter(n => n.category === "place" || n.category === "boundary")
 
     // The isolated dwelling tag is used for named places that are smaller than a hamlet - no more than a few buildings
     // Assume there are no unlocodes for places that small.
-    return sortedByCategory.filter(n => n.addresstype !== "isolated_dwelling")
+    const withoutIsolatedDwelling = filteredByCategory.filter(n => n.addresstype !== "isolated_dwelling");
+
+    // Filter out locations which are super close
+    // Example: https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Castelletto%20di%20Branduzzo&country=IT&state=PV
+    // In this example, it's tempting to filter out the boundary, as that sounds more vague than a place.
+    // However, we are actually interested in the first result (which is the boundary)
+    // So instead, filter out locations which are super close
+    const withoutVeryClosePlaces = withoutIsolatedDwelling.filter(w => {
+        const veryCloseExists = withoutIsolatedDwelling.some(o => o.importance > w.importance && getDistanceFromLatLonInKm(w.lat, w.lon, o.lat, o.lon) < 25)
+
+        return !veryCloseExists
+    })
+
+    return withoutVeryClosePlaces
 }
 
 function addConvenienceAttributes(nominatimResult) {
