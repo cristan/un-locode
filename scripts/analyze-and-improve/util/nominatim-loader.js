@@ -1,7 +1,22 @@
 const fs = require('fs')
 
 async function getNominatimData(unlocode) {
-    const country = unlocode.substring(0,2)
+    const nominatimData = await loadNominatimData(unlocode)
+    if (!nominatimData) {
+        return undefined
+    }
+    const nominatimResult = nominatimData.result
+
+    // Boundaries aren't places. Put at the bottom for now.
+    const boundaries = nominatimResult.filter(n => n.category === "boundary")
+    // There are other categories like landuse.
+    const everythingElse = nominatimResult.filter(n => n.category !== "boundary")
+
+    return {scrapeType: nominatimData.scrapeType, result: everythingElse.concat(boundaries)}
+}
+
+async function loadNominatimData(unlocode) {
+    const country = unlocode.substring(0, 2)
     const location = unlocode.substring(2)
 
     const directoryRoot = `../../data/nominatim/${country}/${location}`
@@ -10,7 +25,7 @@ async function getNominatimData(unlocode) {
     if (byRegionExists) {
         const byRegion = fs.readFileSync(byRegionFileName, 'utf8')
         if (byRegion !== "[]") {
-            return { scrapeType: "byRegion", result: JSON.parse(byRegion) }
+            return {scrapeType: "byRegion", result: JSON.parse(byRegion)}
         }
     }
 
@@ -23,7 +38,7 @@ async function getNominatimData(unlocode) {
     if (byCity === "[]") {
         return undefined
     } else {
-        return { scrapeType: "byCity", result: JSON.parse(byCity) }
+        return {scrapeType: "byCity", result: JSON.parse(byCity)}
     }
 }
 
