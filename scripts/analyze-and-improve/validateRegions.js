@@ -1,5 +1,6 @@
 const {readCsv, readSubdivisionData} = require("./util/readCsv");
 const {getSubdivisionCode, getNominatimData} = require("./util/nominatim-loader");
+const {downloadFromNominatimIfNeeded} = require("./util/nominatim-downloader");
 
 async function createReport() {
     const csvDatabase = await readCsv()
@@ -7,12 +8,13 @@ async function createReport() {
 
     for (const unlocode of Object.keys(csvDatabase)) {
         const entry = csvDatabase[unlocode]
-        if (entry.country !== "IT") {
+        if (entry.country !== "CN") {
             continue
         }
 
         if (entry.subdivisionCode && !entry.subdivisionName) {
             console.log(`https://unlocode.info/${unlocode} (${entry.city}) has a non-existing region ${entry.subdivisionCode}.`)
+            await downloadFromNominatimIfNeeded(unlocode)
             const nominatimData = (await getNominatimData(unlocode))?.result
             if (nominatimData) {
                 const subdivisionCodes = nominatimData.map(nd => {

@@ -35,13 +35,13 @@ async function readCsv() {
 
         const country = columns[UNLOCODE_COLUMN_COUNTRY]
         const location = columns[UNLOCODE_COLUMN_LOCATION];
-        const unLocode = `${country}${location}`
+        const unlocode = `${country}${location}`
         const city = columns[UNLOCODE_COLUMN_CITY]
         const subdivisionCode = columns[UNLOCODE_COLUMN_SUBDIVISION]
         const subdivisionName = subdivisionDatabase[`${country}|${subdivisionCode}`]
         const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
         const date = columns[UNLOCODE_COLUMN_DATE]
-        csvDatabase[unLocode] = { city, country, location, subdivisionCode, subdivisionName, coordinates, date }
+        csvDatabase[unlocode] = { city, country, location, subdivisionCode, subdivisionName, coordinates, date, unlocode }
     }
     return csvDatabase
 }
