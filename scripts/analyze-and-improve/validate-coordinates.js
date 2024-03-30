@@ -1,6 +1,6 @@
 const {readCsv} = require("./util/readCsv")
 const {convertToDecimal} = require("./util/coordinatesConverter")
-const {getNominatimData} = require("./util/nominatim-loader")
+const {getNominatimData, getSubdivisionCode} = require("./util/nominatim-loader")
 
 async function validateCoordinates() {
     const csvDatabase = await readCsv()
@@ -40,7 +40,33 @@ async function validateCoordinates() {
                 nominatimQuery += `&state=${encodeURI(state)}`
             }
 
-            console.log(`https://unlocode.info/${unlocode}: (city: ${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
+            if (scrapeType === "byRegion" && getSubdivisionCode(nominatimResult[0]) !== entry.subdivisionCode) {
+                throw new Error(`${unlocode} has unexpected region stuff going on`)
+            }
+
+            if (!entry.subdivisionCode) {
+                // It could be that the first result is just the wrong one. Let's see if we can find a close one (which probably is the correct one)
+                const closeResults = nominatimResult.filter(n => {
+                    return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
+                })
+                if (closeResults.length !== 0) {
+                    const subdivisionCodes = closeResults.map(nd => getSubdivisionCode(nd))
+                    const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
+                    const extraLog = `${Array.from(uniqueSubdivisionCodes).join(' or ')} to avoid the confusion.`
+                    console.log(`https://unlocode.info/${unlocode}: (${entry.city}): There are ${nominatimResult.length} different results for ${entry.city} in ${entry.country}. Let's set the region to ${extraLog}`)
+                } else {
+                    // TODO: something
+                    console.log("HALP!")
+                }
+            }
+            else if (scrapeType === "byCity" && getSubdivisionCode(nominatimResult[0]) !== entry.subdivisionCode) {
+                const subdivisionCodes = nominatimResult.map(nd => getSubdivisionCode(nd))
+                const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
+                console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
+            } else {
+                console.log(`https://unlocode.info/${unlocode}: (${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
+            }
+
         }
     }
 }
