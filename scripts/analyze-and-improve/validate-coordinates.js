@@ -15,7 +15,11 @@ async function validateCoordinates() {
 
         const nominatimData = await getNominatimData(unlocode)
         if (!nominatimData) {
-            // When nominatim can't find it, there's a good chance the name is wrong, but let's ignore that for now
+            // Nominatim can't find it, which most likely means a non-standard name is found.
+            // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
+            // These should be called "Mondello" and "Acconia" to be found in nominatim.
+
+            // Let's ignore this for now because these 2 examples are actually fine.
             continue
         }
 
