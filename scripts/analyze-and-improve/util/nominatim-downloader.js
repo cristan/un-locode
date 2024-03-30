@@ -33,17 +33,26 @@ async function downloadFromNominatimIfNeeded(entry) {
             fs.mkdirSync(directory, { recursive: true });
         }
 
-        const fileName = `${directory}/${unlocode}.json`;
-        const fileAlreadyExists = fs.existsSync(fileName)
-        if (fileAlreadyExists) {
-            // console.log(`${fileName} already exists. Skipping.`)
-            return
-        }
-
-        await delay(1000)
-        const fromNominatim2 = await (await fetch(ogNominatimQuery)).text()
-        await fs.writeFileSync(fileName, fromNominatim2)
+        await downloadByCityIfNeeded(directory, unlocode, ogNominatimQuery);
     }
+}
+
+async function downloadByCityIfNeeded(entry) {
+    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
+    const directory = `../../data/nominatim/${entry.country}/${entry.location}/cityOnly`
+    const fileName = `${directory}/${entry.unlocode}.json`
+    const fileAlreadyExists = fs.existsSync(fileName)
+    if (fileAlreadyExists) {
+        // console.log(`${fileName} already exists. Skipping.`)
+        return
+    }
+
+    await delay(1000)
+    const fromNominatim2 = await (await fetch(ogNominatimQuery)).text()
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+    }
+    await fs.writeFileSync(fileName, fromNominatim2)
 }
 
 function delay(ms) {
@@ -51,5 +60,6 @@ function delay(ms) {
 }
 
 module.exports = {
-    downloadFromNominatimIfNeeded
+    downloadFromNominatimIfNeeded,
+    downloadByCityIfNeeded
 }

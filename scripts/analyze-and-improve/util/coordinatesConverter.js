@@ -32,6 +32,30 @@ function convertToDecimal(input) {
     }
 }
 
+function convertToUnlocode(decimalLat, decimalLon) {
+    const latDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLat));
+    const lonDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLon));
+
+    const latDirection = convertToDirection(decimalLat, 'N', 'S');
+    const lonDirection = convertToDirection(decimalLon, 'E', 'W');
+
+    const lat = `${latDegreesMinutes[0].toString().padStart(2, '0')}${latDegreesMinutes[1].toString().padStart(2, '0')}${latDirection}`;
+    const lon = `${lonDegreesMinutes[0].toString().padStart(3, '0')}${lonDegreesMinutes[1].toString().padStart(2, '0')}${lonDirection}`;
+
+    return `${lat} ${lon}`;
+}
+
+function convertToDegreesMinutes(decimal) {
+    const degrees = Math.floor(decimal);
+    const minutes = (decimal - degrees) * 60;
+    return [degrees, minutes.toFixed(0)];
+}
+
+function convertToDirection(coord, positiveSymbol, negativeSymbol) {
+    return coord >= 0 ? positiveSymbol : negativeSymbol;
+}
+
 module.exports = {
-    convertToDecimal
+    convertToDecimal,
+    convertToUnlocode
 }

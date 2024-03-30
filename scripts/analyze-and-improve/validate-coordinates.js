@@ -1,6 +1,7 @@
 const {readCsv} = require("./util/readCsv")
-const {convertToDecimal} = require("./util/coordinatesConverter")
-const {getNominatimData, getSubdivisionCode} = require("./util/nominatim-loader")
+const {convertToDecimal, convertToUnlocode} = require("./util/coordinatesConverter")
+const {getNominatimData, getSubdivisionCode, getNominatimDataByCity} = require("./util/nominatim-loader")
+const {downloadByCityIfNeeded} = require("./util/nominatim-downloader");
 
 async function validateCoordinates() {
     const csvDatabase = await readCsv()
@@ -73,6 +74,27 @@ async function validateCoordinates() {
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
             } else {
                 // TODO: fix ITAN2: (Antignano). The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
+                const allInCorrectRegion = nominatimResult.every(n => getSubdivisionCode(n) === entry.subdivisionCode)
+                if (scrapeType === "byRegion" && allInCorrectRegion) {
+                    // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
+                    // This means that either the coordinates are wrong, or the region is wrong.
+                    // Example: ITAN2
+                    await downloadByCityIfNeeded(entry)
+                    const nominatimDataByCity = getNominatimDataByCity(unlocode).result
+                    const closeInAnyRegion = nominatimDataByCity.filter(n => {
+                        return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
+                    })
+
+                    if (closeInAnyRegion.length !== 0) {
+                        const detected = closeInAnyRegion[0]
+                        const detectedSubdivisionCode = getSubdivisionCode(detected)
+                        const detectedCoordinates = convertToUnlocode(detected.lat, detected.lon)
+                        console.log(`https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${detected.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to ${detectedCoordinates}.`)
+                    } else {
+                        console.log(`TODO: not yet thought out case encountered at ${unlocode}`)
+                    }
+                }
+
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
             }
 

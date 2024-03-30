@@ -40,7 +40,13 @@ async function loadNominatimData(unlocode) {
             return {scrapeType: "byRegion", result: JSON.parse(byRegion)}
         }
     }
+    getNominatimDataByCity(unlocode)
+}
 
+function getNominatimDataByCity(unlocode) {
+    const country = unlocode.substring(0, 2)
+    const location = unlocode.substring(2)
+    const directoryRoot = `../../data/nominatim/${country}/${location}`
     const byCityFileName = `${directoryRoot}/cityOnly/${unlocode}.json`
     const byCityExists = fs.existsSync(byCityFileName)
     if (!byCityExists) {
@@ -60,5 +66,6 @@ function getSubdivisionCode(nominatimElement) {
 
 module.exports = {
     getNominatimData,
+    getNominatimDataByCity,
     getSubdivisionCode
 }
