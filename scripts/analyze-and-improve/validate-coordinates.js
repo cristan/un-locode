@@ -6,7 +6,7 @@ const {downloadByCityIfNeeded} = require("./util/nominatim-downloader");
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 // TODO: ITPSU.
 async function validateCoordinates() {
-    // console.debug = function() {};
+    console.debug = function() {};
 
     const csvDatabase = await readCsv()
 
@@ -14,7 +14,7 @@ async function validateCoordinates() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "CN") {
+        if (!decimalCoordinates || entry.country !== "IT") {
             continue
         }
 
@@ -59,7 +59,7 @@ async function validateCoordinates() {
                     console.log(toLog)
                 } else {
                     // TODO: something
-                    console.log(`HALP! I don't know what to do with ${unlocode}`)
+                    throw new Error(`HALP! I don't know what to do with ${unlocode}`)
                 }
             }
             else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
@@ -122,7 +122,7 @@ async function validateCoordinates() {
                             if (smallVillage) {
                                 after += ` (WARN: small village)`
                             }
-                            return `${before}${convertToUnlocode(nm.lat, nm.lon)} (${nm.lat}, ${nm.lon}) = ${distance} km away${after}; source: ${nm.sourceUrl}`
+                            return `${before}${convertToUnlocode(nm.lat, nm.lon)} (${nm.lat}, ${nm.lon}) = ${distance} km${distance > 1000 ? '(!)' : ""} away${after}; source: ${nm.sourceUrl}`
                         })
                         const allOptions = Array.from(options).join(' or ')
 
