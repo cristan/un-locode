@@ -56,11 +56,15 @@ async function validateCoordinates() {
                 if (closeResults.length !== 0) {
                     const subdivisionCodes = closeResults.map(nd => getSubdivisionCode(nd))
                     const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
-                    const extraLog = `${Array.from(uniqueSubdivisionCodes).join(' or ')} to avoid the confusion.`
-                    console.log(`https://unlocode.info/${unlocode}: (${entry.city}): There are ${nominatimResult.length} different results for ${entry.city} in ${entry.country}. Let's set the region to ${extraLog}`)
+                    const extraLog = Array.from(uniqueSubdivisionCodes).join(' or ')
+                    let toLog = `https://unlocode.info/${unlocode}: (${entry.city}): There are ${nominatimResult.length} different results for ${entry.city} in ${entry.country}. Let's set the region to ${extraLog} to avoid the confusion.`
+                    if (closeResults.length === 1) {
+                        toLog += ` Source: https://www.openstreetmap.org/${closeResults[0].osm_type}/${closeResults[0].osm_id}`
+                    }
+                    console.log(toLog)
                 } else {
                     // TODO: something
-                    console.log("HALP!")
+                    console.log(`HALP! I don't know what to do with ${unlocode}`)
                 }
             }
             else if (scrapeType === "byCity" && getSubdivisionCode(nominatimResult[0]) !== entry.subdivisionCode) {
@@ -68,6 +72,7 @@ async function validateCoordinates() {
                 const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
             } else {
+                // TODO: fix ITAN2: (Antignano). The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
             }
 
