@@ -1,6 +1,6 @@
 const {readCsv} = require("./util/readCsv")
 const {convertToDecimal} = require("./util/coordinatesConverter")
-const fs = require("fs")
+const {getNominatimData} = require("./util/nominatim-loader")
 
 async function createReport() {
     const csvDatabase = await readCsv()
@@ -31,13 +31,16 @@ async function createReport() {
 
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, lat, lon));
 
+        // TODO: when there's no subdivisionCode and there are more than 1 subdivisions in the nominatim results, suggest setting the region to the one of the closest nominatim entry
+        //  if that's within 25 km + the diameter of the bounding box / 2
+
         if (distance > 100) {
             let nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
             if (scrapeType === "byRegion") {
                 nominatimQuery += `&state=${encodeURI(state)}`
             }
 
-            console.log(`https://unlocode.info/${unlocode}: (city: ${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => ": ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
+            console.log(`https://unlocode.info/${unlocode}: (city: ${entry.city}), // ${entry.subdivisionCode}${entry.subdivisionName ? ` => ${entry.subdivisionName}` : ""} vs ${countyCode ? countyCode + " => " : ""}${county} ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude} vs ${lat}, ${lon} => ${distance} km apart. ${nominatimQuery}`)
         }
     }
 }
@@ -55,33 +58,6 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 
 function deg2rad(deg) {
     return deg * (Math.PI / 180)
-}
-
-async function getNominatimData(unlocode) {
-    const country = unlocode.substring(0,2)
-    const location = unlocode.substring(2)
-
-    const directoryRoot = `../../data/nominatim/${country}/${location}`
-    const byRegionFileName = `${directoryRoot}/byRegion/${unlocode}.json`
-    const byRegionExists = fs.existsSync(byRegionFileName)
-    if (byRegionExists) {
-        const byRegion = fs.readFileSync(byRegionFileName, 'utf8')
-        if (byRegion !== "[]") {
-            return { scrapeType: "byRegion", result: JSON.parse(byRegion) }
-        }
-    }
-
-    const byCityFileName = `${directoryRoot}/cityOnly/${unlocode}.json`
-    const byCityExists = fs.existsSync(byCityFileName)
-    if (!byCityExists) {
-        return undefined
-    }
-    const byCity = fs.readFileSync(byCityFileName, 'utf8')
-    if (byCity === "[]") {
-        return undefined
-    } else {
-        return { scrapeType: "byCity", result: JSON.parse(byCity) }
-    }
 }
 
 createReport()

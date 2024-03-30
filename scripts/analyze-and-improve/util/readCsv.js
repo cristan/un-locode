@@ -6,7 +6,8 @@ const UNLOCODE_COLUMN_CITY = 3
 const UNLOCODE_COLUMN_SUBDIVISION = 5
 const UNLOCODE_COLUMN_COORDINATES = 10
 const UNLOCODE_COLUMN_DATE = 8
-async function readCsv() {
+
+function readSubdivisionData() {
     const subdivisionCodesRaw = fs.readFileSync("../../data/subdivision-codes.csv", 'utf8').split("\n")
     subdivisionCodesRaw.shift()
     const subdivisionDatabase = {}
@@ -17,6 +18,11 @@ async function readCsv() {
         const subdivisionName = columns[2]
         subdivisionDatabase[`${countryCode}|${subdivisionCode}`] = subdivisionName
     }
+    return subdivisionDatabase
+}
+
+async function readCsv() {
+    const subdivisionDatabase = readSubdivisionData()
 
     const codeList = fs.readFileSync('../../data/code-list.csv', 'utf8').split("\n")
     codeList.shift()
@@ -67,5 +73,6 @@ function parseCSV(csvString) {
 }
 
 module.exports = {
-    readCsv
+    readCsv,
+    readSubdivisionData
 }
