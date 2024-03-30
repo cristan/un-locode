@@ -56,7 +56,7 @@ async function validateCoordinates() {
                     if (closeResults.length === 1) {
                         toLog += ` Source: ${closeResults[0].sourceUrl}`
                     }
-                    console.log(toLog)
+                    console.log(toLog + "\n")
                 } else {
                     // TODO: something
                     throw new Error(`HALP! I don't know what to do with ${unlocode}`)
@@ -65,7 +65,7 @@ async function validateCoordinates() {
             else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
                 const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
                 const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
-                console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
+                console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}\n`)
             } else if(nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
                 // Example: CNANP. First hit is somewhere else, but there is another which is close, and it's all in the same region. It's probably fine: continue
             } else {
@@ -105,6 +105,7 @@ async function validateCoordinates() {
                         }
                         console.log(message)
                         console.debug(`Query which also searches by subdivision: ${nominatimQuery}\n`)
+                        console.log()
                     } else {
                         // Nothing close found when searching for any region either. The location is probably just wrong.
                         if (entry.subdivisionCode !== nominatimResult[0].subdivisionCode) {
@@ -128,6 +129,7 @@ async function validateCoordinates() {
 
                         console.log(`https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`)
                         console.debug(`Found via ${nominatimQuery}\n`)
+                        console.log()
                     }
                 } else {
                     throw new Error(`https://unlocode.info/${unlocode} Unexpected status encountered`)
