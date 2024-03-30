@@ -66,6 +66,8 @@ async function validateCoordinates() {
                 const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
                 const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
                 console.log(`https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`)
+            } else if(nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
+                // Example: CNANP. First hit is somewhere else, but there is another which is close, and it's all in the same region. It's probably fine: continue
             } else {
                 // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
                 // This means that either the coordinates are wrong, or the region is wrong.
