@@ -1,8 +1,14 @@
 const fs = require('fs')
 const {getDistanceFromLatLonInKm} = require("./coordinatesConverter");
 
-async function getNominatimData(unlocode) {
-    const nominatimData = await loadNominatimData(unlocode)
+/**
+ * @param unlocode
+ * @param subdivisionCode optional parameter to doublecheck to filter out incorrect regions.
+ * Like with https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Laocheng&country=CN&state=CN-HI
+ * Which somehow also has a region code of HA even though the provided state is CN-HI.
+ */
+async function getNominatimData(unlocode, subdivisionCode) {
+    const nominatimData = await loadNominatimData(unlocode, subdivisionCode)
     if (!nominatimData) {
         return undefined
     }
@@ -15,10 +21,10 @@ async function getNominatimData(unlocode) {
 
     addConvenienceAttributes(withoutUselessEntries)
 
-    return {scrapeType: nominatimData.scrapeType, result: withoutUselessEntries}
+    return { scrapeType: nominatimData.scrapeType, result: withoutUselessEntries }
 }
 
-async function loadNominatimData(unlocode) {
+async function loadNominatimData(unlocode, subdivisionCode) {
     const country = unlocode.substring(0, 2)
     const location = unlocode.substring(2)
 
@@ -28,7 +34,15 @@ async function loadNominatimData(unlocode) {
     if (byRegionExists) {
         const byRegion = fs.readFileSync(byRegionFileName, 'utf8')
         if (byRegion !== "[]") {
-            return {scrapeType: "byRegion", result: JSON.parse(byRegion)}
+
+            const parsed = JSON.parse(byRegion)
+            let parsedAndFiltered = parsed
+            if (subdivisionCode) {
+                parsedAndFiltered = parsed.filter(nm => getSubdivisionCode(nm) === subdivisionCode)
+            }
+            if (parsedAndFiltered.length > 0) {
+                return {scrapeType: "byRegion", result: parsedAndFiltered}
+            }
         }
     }
     getNominatimDataByCity(unlocode)

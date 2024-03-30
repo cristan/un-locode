@@ -18,7 +18,7 @@ async function validateCoordinates() {
             continue
         }
 
-        const nominatimData = await getNominatimData(unlocode)
+        const nominatimData = await getNominatimData(unlocode, entry.subdivisionCode)
         if (!nominatimData) {
             // Nominatim can't find it, which most likely means a non-standard name is found.
             // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
@@ -81,8 +81,7 @@ async function validateCoordinates() {
                     let closestInAnyRegion = undefined
                     nominatimDataByCity.forEach(c => {
                         const distance = getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, c.lat, c.lon);
-                        if (distance < closestDistance)
-                        {
+                        if (distance < closestDistance) {
                             closestInAnyRegion = c
                             closestDistance = distance
                         }
@@ -92,7 +91,15 @@ async function validateCoordinates() {
                         const detectedSubdivisionCode = closestInAnyRegion.subdivisionCode
                         let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
                         if (nominatimResult.length === 1) {
-                            message += `${convertToUnlocode(nominatimResult[0].lat, nominatimResult[0].lon)} (${closestInAnyRegion.sourceUrl}).`
+                            const onlyResult = nominatimResult[0];
+                            message += `${convertToUnlocode(onlyResult.lat, onlyResult.lon)} (${closestInAnyRegion.sourceUrl})`
+                            if (onlyResult.name !== entry.city) {
+                                message += ` where ${onlyResult.name} (in ${onlyResult.subdivisionCode}) is located`
+                            }
+                            if (onlyResult.place_rank >= 19) {
+                                message += ` (WARN: small village)`
+                            }
+                            message += "."
                         } else {
                             message += `any of the ${nominatimResult.length} locations in ${entry.subdivisionCode}.`
                         }
@@ -104,12 +111,26 @@ async function validateCoordinates() {
                             throw new Error(`${unlocode} This shouldn't be possible`)
                         }
 
-                        const options = nominatimResult.map(nm => `${convertToUnlocode(nm.lat, nm.lon)} (${nm.lat}, ${nm.lon}) source: ${nm.sourceUrl}`)
+                        const options = nominatimResult.map(nm => {
+                            const smallVillage = nm.place_rank >= 19
+                            const before =  smallVillage ? "maybe " : ""
+                            const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon))
+                            let after = ""
+                            if (nm.name !== entry.city) {
+                                after += ` where ${nm.name} is located`
+                            }
+                            if (smallVillage) {
+                                after += ` (WARN: small village)`
+                            }
+                            return `${before}${convertToUnlocode(nm.lat, nm.lon)} (${nm.lat}, ${nm.lon}) = ${distance} km away${after}; source: ${nm.sourceUrl}`
+                        })
                         const allOptions = Array.from(options).join(' or ')
 
                         console.log(`https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`)
                         console.debug(`Found via ${nominatimQuery}\n`)
                     }
+                } else {
+                    throw new Error(`https://unlocode.info/${unlocode} Unexpected status encountered`)
                 }
             }
         }
