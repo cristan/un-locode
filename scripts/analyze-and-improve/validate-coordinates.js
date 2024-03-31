@@ -1,6 +1,6 @@
 const {readCsv} = require("./util/readCsv")
 const {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} = require("./util/coordinatesConverter")
-const {getNominatimData, getNominatimDataByCity} = require("./util/nominatim-loader")
+const {getNominatimData, readNominatimDataByCity} = require("./util/nominatim-loader")
 const {downloadByCityIfNeeded} = require("./util/nominatim-downloader");
 
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
@@ -14,11 +14,11 @@ async function validateCoordinates() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "IT") {
+        if (!decimalCoordinates || entry.country !== "CN") {
             continue
         }
 
-        const nominatimData = await getNominatimData(unlocode, entry.subdivisionCode)
+        const nominatimData = await getNominatimData(entry)
         if (!nominatimData) {
             // Nominatim can't find it, which most likely means a non-standard name is found.
             // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
@@ -75,7 +75,7 @@ async function validateCoordinates() {
                 const allInCorrectRegion = nominatimResult.every(n => n.subdivisionCode === entry.subdivisionCode)
                 if (scrapeType === "byRegion" && allInCorrectRegion) {
                     await downloadByCityIfNeeded(entry)
-                    const nominatimDataByCity = getNominatimDataByCity(unlocode).result
+                    const nominatimDataByCity = readNominatimDataByCity(unlocode).result
 
                     let closestDistance = Number.MAX_VALUE
                     let closestInAnyRegion = undefined

@@ -1,6 +1,6 @@
 const {readCsv} = require("./util/readCsv")
 const {convertToDecimal} = require("./util/coordinatesConverter")
-const {downloadFromNominatimIfNeeded} = require("./util/nominatim-downloader")
+const {getNominatimData} = require("./util/nominatim-loader")
 
 async function start() {
     const csvDatabase = await readCsv()
@@ -9,12 +9,12 @@ async function start() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "CN") {
+        if (!decimalCoordinates) {// || entry.country !== "CN"
             continue
         }
 
         console.log(`Downloading ${unlocode}`)
-        await downloadFromNominatimIfNeeded(entry)
+        await getNominatimData(entry)
     }
 }
 

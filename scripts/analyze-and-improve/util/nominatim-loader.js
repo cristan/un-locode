@@ -1,17 +1,23 @@
 const fs = require('fs')
 const {getDistanceFromLatLonInKm} = require("./coordinatesConverter");
+const {downloadByRegionIfNeeded, downloadByCityIfNeeded} = require("./nominatim-downloader");
 
 /**
- * @param unlocode
- * @param subdivisionCode optional parameter to doublecheck to filter out incorrect regions.
- * Like with https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Laocheng&country=CN&state=CN-HI
- * Which somehow also has a region code of HA even though the provided state is CN-HI.
+ * Loads all Nominatim data: it either loads it from cached files or downloads said files when they don't exist yet.
+ *
+ * Either loads via region, or when the entry doesn't have a subdivisionCode, or that doesn't yield results, it returns
+ * the data via city only.
+ *
+ * Afterwards, {@link filterOutUselessEntries} and {@link addConvenienceAttributes} are called on the data.
+ *
+ * @param entry A CSV entry of a unlocode.
  */
-async function getNominatimData(unlocode, subdivisionCode) {
-    const nominatimData = await loadNominatimData(unlocode, subdivisionCode)
+async function getNominatimData(entry) {
+    const nominatimData = await loadNominatimData(entry)
     if (!nominatimData) {
         return undefined
     }
+
     const nominatimResult = nominatimData.result
 
     const withoutUselessEntries = filterOutUselessEntries(nominatimResult);
@@ -24,39 +30,48 @@ async function getNominatimData(unlocode, subdivisionCode) {
     return { scrapeType: nominatimData.scrapeType, result: withoutUselessEntries }
 }
 
-async function loadNominatimData(unlocode, subdivisionCode) {
+/**
+ *
+ */
+async function loadNominatimData(entry) {
+    const subdivisionCode = entry.subdivisionCode
+    if (subdivisionCode) {
+        await downloadByRegionIfNeeded(entry)
+        const byRegion = readNominatimDataByRegion(entry)
+        if (byRegion ) {
+            return { scrapeType: "byRegion", result: byRegion }
+        }
+    }
+
+    await downloadByCityIfNeeded(entry)
+    return readNominatimDataByCity(entry.unlocode)
+}
+
+function readNominatimDataByRegion(entry) {
+    const unlocode = entry.unlocode
     const country = unlocode.substring(0, 2)
     const location = unlocode.substring(2)
 
     const directoryRoot = `../../data/nominatim/${country}/${location}`
     const byRegionFileName = `${directoryRoot}/byRegion/${unlocode}.json`
-    const byRegionExists = fs.existsSync(byRegionFileName)
-    if (byRegionExists) {
-        const byRegion = fs.readFileSync(byRegionFileName, 'utf8')
-        if (byRegion !== "[]") {
+    const byRegion = fs.readFileSync(byRegionFileName, 'utf8')
 
-            const parsed = JSON.parse(byRegion)
-            let parsedAndFiltered = parsed
-            if (subdivisionCode) {
-                parsedAndFiltered = parsed.filter(nm => getSubdivisionCode(nm) === subdivisionCode)
-            }
-            if (parsedAndFiltered.length > 0) {
-                return {scrapeType: "byRegion", result: parsedAndFiltered}
-            }
-        }
+    const parsed = JSON.parse(byRegion)
+    // Filter out results which aren't in the region after scraping by region.
+    // Example: this goes wrong at https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Laocheng&country=CN&state=CN-HI
+    // Which also returns data in HA even though the provided state is CN-HI.
+    const parsedAndFiltered = parsed.filter(nm => getSubdivisionCode(nm) === entry.subdivisionCode)
+    if (parsedAndFiltered.length === 0) {
+        return undefined
     }
-    getNominatimDataByCity(unlocode)
+    return parsedAndFiltered
 }
 
-function getNominatimDataByCity(unlocode) {
+function readNominatimDataByCity(unlocode) {
     const country = unlocode.substring(0, 2)
     const location = unlocode.substring(2)
     const directoryRoot = `../../data/nominatim/${country}/${location}`
     const byCityFileName = `${directoryRoot}/cityOnly/${unlocode}.json`
-    const byCityExists = fs.existsSync(byCityFileName)
-    if (!byCityExists) {
-        return undefined
-    }
     const byCity = fs.readFileSync(byCityFileName, 'utf8')
     if (byCity === "[]") {
         return undefined
@@ -74,9 +89,6 @@ function getNominatimDataByCity(unlocode) {
 }
 
 function filterOutUselessEntries(nominatimResult) {
-    // Boundaries aren't places. Put at the bottom for now.
-    // Categories can be place, boundary, landuse, waterway, natural, mountain_pass, leisure
-
     // Filter out anything which isn't a place or a boundary
     const filteredByCategory = nominatimResult.filter(n => n.category === "place" || n.category === "boundary")
 
@@ -112,5 +124,5 @@ function getSubdivisionCode(nominatimElement) {
 
 module.exports = {
     getNominatimData,
-    getNominatimDataByCity,
+    readNominatimDataByCity,
 }

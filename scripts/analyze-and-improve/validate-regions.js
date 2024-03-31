@@ -14,8 +14,7 @@ async function createReport() {
 
         if (entry.subdivisionCode && !entry.subdivisionName) {
             console.log(`https://unlocode.info/${unlocode} (${entry.city}) has a non-existing region ${entry.subdivisionCode}.`)
-            await downloadFromNominatimIfNeeded(unlocode)
-            const nominatimData = (await getNominatimData(unlocode))?.result
+            const nominatimData = (await getNominatimData(entry))?.result
             if (nominatimData) {
                 const subdivisionCodes = nominatimData.map(nd => {
                     const nominatimRegionCode = nd.subdivisionCode

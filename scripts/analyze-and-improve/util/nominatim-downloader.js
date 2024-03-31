@@ -1,44 +1,29 @@
 const fs = require('fs')
 
-async function downloadFromNominatimIfNeeded(entry) {
-    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
-    let nominatimQuery = ogNominatimQuery
-    const region = entry.subdivisionCode;
-    let byRegion = false
-    if (region) {
-        nominatimQuery += `&state=${entry.country}-${region}`
-        byRegion = true
+async function downloadByRegionIfNeeded(entry) {
+    const region = entry.subdivisionCode
+    if (!region) {
+        throw new Error(`${entry} doesn't have a region`)
     }
 
-    let scrapeMethod = byRegion ? "byRegion" : "cityOnly"
-    let directory = `../../data/nominatim/${entry.country}/${entry.location}/${scrapeMethod}`
+    const directory = `../../data/nominatim/${entry.country}/${entry.location}/byRegion`
     if (!fs.existsSync(directory)){
         fs.mkdirSync(directory, { recursive: true });
     }
-    const unlocode = entry.unlocode
-    const fileName = `${directory}/${unlocode}.json`
+    const fileName = `${directory}/${entry.unlocode}.json`
     const fileAlreadyExists = fs.existsSync(fileName)
     if (fileAlreadyExists) {
         // console.log(`${fileName} already exists. Skipping.`)
         return
     }
 
+    const nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}&state=${entry.country}-${region}`
     await delay(1000)
     const fromNominatim = await (await fetch(nominatimQuery)).text()
     await fs.writeFileSync(fileName, fromNominatim)
-    if (byRegion && fromNominatim === "[]") {
-        scrapeMethod = "cityOnly"
-        directory = `../../data/nominatim/${entry.country}/${entry.location}/${scrapeMethod}`
-        if (!fs.existsSync(directory)) {
-            fs.mkdirSync(directory, { recursive: true });
-        }
-
-        await downloadByCityIfNeeded(directory, unlocode, ogNominatimQuery);
-    }
 }
 
 async function downloadByCityIfNeeded(entry) {
-    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
     const directory = `../../data/nominatim/${entry.country}/${entry.location}/cityOnly`
     const fileName = `${directory}/${entry.unlocode}.json`
     const fileAlreadyExists = fs.existsSync(fileName)
@@ -48,6 +33,7 @@ async function downloadByCityIfNeeded(entry) {
     }
 
     await delay(1000)
+    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
     const fromNominatim2 = await (await fetch(ogNominatimQuery)).text()
     if (!fs.existsSync(directory)) {
         fs.mkdirSync(directory, { recursive: true });
@@ -60,6 +46,6 @@ function delay(ms) {
 }
 
 module.exports = {
-    downloadFromNominatimIfNeeded,
+    downloadByRegionIfNeeded,
     downloadByCityIfNeeded
 }
