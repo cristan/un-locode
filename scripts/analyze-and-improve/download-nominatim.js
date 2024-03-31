@@ -1,6 +1,6 @@
-const {readCsv} = require("./util/readCsv")
-const {convertToDecimal} = require("./util/coordinatesConverter")
-const {getNominatimData} = require("./util/nominatim-loader")
+import {readCsv} from "./util/readCsv.js";
+import {convertToDecimal} from "./util/coordinatesConverter.js";
+import {getNominatimData} from "./util/nominatim-loader.js";
 
 async function start() {
     const csvDatabase = await readCsv()

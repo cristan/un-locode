@@ -1,6 +1,6 @@
-const fs = require('fs')
+import fs from "node:fs"
 
-async function downloadByRegionIfNeeded(entry) {
+export async function downloadByRegionIfNeeded(entry) {
     const region = entry.subdivisionCode
     if (!region) {
         throw new Error(`${entry} doesn't have a region`)
@@ -23,7 +23,7 @@ async function downloadByRegionIfNeeded(entry) {
     await fs.writeFileSync(fileName, fromNominatim)
 }
 
-async function downloadByCityIfNeeded(entry) {
+export async function downloadByCityIfNeeded(entry) {
     const directory = `../../data/nominatim/${entry.country}/${entry.location}/cityOnly`
     const fileName = `${directory}/${entry.unlocode}.json`
     const fileAlreadyExists = fs.existsSync(fileName)
@@ -43,9 +43,4 @@ async function downloadByCityIfNeeded(entry) {
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-module.exports = {
-    downloadByRegionIfNeeded,
-    downloadByCityIfNeeded
 }

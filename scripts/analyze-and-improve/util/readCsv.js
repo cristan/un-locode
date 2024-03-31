@@ -1,4 +1,4 @@
-const fs = require("fs")
+import fs from "node:fs"
 
 const UNLOCODE_COLUMN_COUNTRY = 1
 const UNLOCODE_COLUMN_LOCATION = 2
@@ -7,7 +7,7 @@ const UNLOCODE_COLUMN_SUBDIVISION = 5
 const UNLOCODE_COLUMN_COORDINATES = 10
 const UNLOCODE_COLUMN_DATE = 8
 
-function readSubdivisionData() {
+export function readSubdivisionData() {
     const subdivisionCodesRaw = fs.readFileSync("../../data/subdivision-codes.csv", 'utf8').split("\n")
     subdivisionCodesRaw.shift()
     const subdivisionDatabase = {}
@@ -21,7 +21,7 @@ function readSubdivisionData() {
     return subdivisionDatabase
 }
 
-async function readCsv() {
+export async function readCsv() {
     const subdivisionDatabase = readSubdivisionData()
 
     const codeList = fs.readFileSync('../../data/code-list.csv', 'utf8').split("\n")
@@ -70,9 +70,4 @@ function parseCSV(csvString) {
         }
     }
     return result
-}
-
-module.exports = {
-    readCsv,
-    readSubdivisionData
 }

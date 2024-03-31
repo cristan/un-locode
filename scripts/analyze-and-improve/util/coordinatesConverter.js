@@ -1,5 +1,5 @@
 const coordinatesRegex = /^(\d{2})(\d{2})([NS])\s+(\d{3})(\d{2})([EW])$/
-function convertToDecimal(input) {
+export function convertToDecimal(input) {
     if (!input) {
         return ""
     }
@@ -32,7 +32,7 @@ function convertToDecimal(input) {
     }
 }
 
-function convertToUnlocode(decimalLat, decimalLon) {
+export function convertToUnlocode(decimalLat, decimalLon) {
     const latDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLat));
     const lonDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLon));
 
@@ -55,7 +55,7 @@ function convertToDirection(coord, positiveSymbol, negativeSymbol) {
     return coord >= 0 ? positiveSymbol : negativeSymbol;
 }
 
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+export function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371 // Radius of the earth in km
     const dLat = deg2rad(lat2 - lat1) // deg2rad below
     const dLon = deg2rad(lon2 - lon1)
@@ -68,10 +68,4 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 
 function deg2rad(deg) {
     return deg * (Math.PI / 180)
-}
-
-module.exports = {
-    convertToDecimal,
-    convertToUnlocode,
-    getDistanceFromLatLonInKm
 }

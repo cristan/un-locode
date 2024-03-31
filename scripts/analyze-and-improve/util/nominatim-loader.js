@@ -1,6 +1,6 @@
-const fs = require('fs')
-const {getDistanceFromLatLonInKm} = require("./coordinatesConverter");
-const {downloadByRegionIfNeeded, downloadByCityIfNeeded} = require("./nominatim-downloader");
+import fs from "node:fs"
+import {downloadByCityIfNeeded, downloadByRegionIfNeeded} from "./nominatim-downloader.js";
+import {getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 
 /**
  * Loads all Nominatim data: it either loads it from cached files or downloads said files when they don't exist yet.
@@ -12,7 +12,7 @@ const {downloadByRegionIfNeeded, downloadByCityIfNeeded} = require("./nominatim-
  *
  * @param entry A CSV entry of a unlocode.
  */
-async function getNominatimData(entry) {
+export async function getNominatimData(entry) {
     const nominatimData = await loadNominatimData(entry)
     if (!nominatimData) {
         return undefined
@@ -67,7 +67,7 @@ function readNominatimDataByRegion(entry) {
     return parsedAndFiltered
 }
 
-function readNominatimDataByCity(unlocode) {
+export function readNominatimDataByCity(unlocode) {
     const country = unlocode.substring(0, 2)
     const location = unlocode.substring(2)
     const directoryRoot = `../../data/nominatim/${country}/${location}`
@@ -120,9 +120,4 @@ function addConvenienceAttributes(nominatimResult) {
 
 function getSubdivisionCode(nominatimElement) {
     return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl4"]?.substring(3)
-}
-
-module.exports = {
-    getNominatimData,
-    readNominatimDataByCity,
 }

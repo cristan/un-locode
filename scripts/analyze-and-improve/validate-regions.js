@@ -1,6 +1,5 @@
-const {readCsv, readSubdivisionData} = require("./util/readCsv");
-const {getNominatimData} = require("./util/nominatim-loader");
-const {downloadFromNominatimIfNeeded} = require("./util/nominatim-downloader");
+import {readCsv, readSubdivisionData} from "./util/readCsv.js";
+import {getNominatimData} from "./util/nominatim-loader.js";
 
 async function createReport() {
     const csvDatabase = await readCsv()
