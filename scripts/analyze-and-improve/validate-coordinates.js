@@ -1,10 +1,7 @@
 import {readCsv} from "./util/readCsv.js";
-import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./util/coordinatesConverter.js";
-import {downloadByCityIfNeeded} from "./util/nominatim-downloader.js";
-import {getNominatimData, readNominatimDataByCity} from "./util/nominatim-loader.js";
+import {convertToDecimal} from "./util/coordinatesConverter.js";
+import {getNominatimData} from "./util/nominatim-loader.js";
 import {validateCoordinates} from "./util/entry-validator.js";
-
-// TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 
 async function validateAllCoordinates() {
     // console.debug = function() {};

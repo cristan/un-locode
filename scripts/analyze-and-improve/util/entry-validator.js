@@ -6,6 +6,7 @@ import {readNominatimDataByCity} from "./nominatim-loader.js";
  * Checks if the coordinates don't match the first hit on Nominatim and returns an as helpful error message as possible.
  * Note that this doesn't have to be coordinates related: it could also be caused by an incorrect region.
  */
+// TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 export async function validateCoordinates(entry, nominatimData) {
     const decimalCoordinates = convertToDecimal(entry.coordinates)
     if (!decimalCoordinates) {
@@ -49,20 +50,34 @@ export async function validateCoordinates(entry, nominatimData) {
         const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
         const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
 
-        const validSubdivisionCode = !!entry.subdivisionName
+        // const validSubdivisionCode = !!entry.subdivisionName
 
-        // const closeResults = nominatimResult.filter(n => {
-        //     return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
-        // })
-        let message = `https://unlocode.info/${unlocode}: (${entry.city}) `
-        if (!validSubdivisionCode) {
-            message += `Invalid subdivision code ${entry.subdivisionCode}! `
-        }
-
-
-        // TODO: https://unlocode.info/ITCFL The coordinates don't have to be updated, just the region
+        const closeResults = nominatimResult.filter(n => {
+            return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
+        })
+        let message = `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}!`
         // TODO: https://unlocode.info/CNUNA The region doesn't even exist.
-        return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`
+        // if (!validSubdivisionCode) {
+        //     message += `Invalid subdivision code ${entry.subdivisionCode}! `
+        // }
+
+        if (closeResults.length === 1) {
+            const closeResult = closeResults[0];
+            message += ` ${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
+            const otherAlternatives = nominatimResult
+                .filter(cr => {
+                    return cr !== closeResult
+                })
+                .map(cr => `${cr.name} in ${cr.subdivisionCode}`)
+            if (otherAlternatives.length > 0) {
+                message += ` It could also be that ${otherAlternatives.join(' or ')} is meant.`
+            }
+            return message
+        } else if (closeResults.length > 1) {
+            throw new Error(`${unlocode} Unexpected case`)
+        } else {
+            return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`
+        }
     } else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
         // Example: CNANP. First hit is somewhere else, but there is another which is close, and it's all in the same region. It's probably fine: continue
     } else {
