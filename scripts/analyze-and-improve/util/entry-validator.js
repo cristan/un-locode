@@ -47,10 +47,6 @@ export async function validateCoordinates(entry, nominatimData) {
             getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
         }
     } else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
-        const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
-        const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
-
-
         const closeResults = nominatimResult.filter(n => {
             return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
         })
@@ -68,13 +64,15 @@ export async function validateCoordinates(entry, nominatimData) {
                 .filter(cr => {
                     return !closeResults.includes(cr)
                 })
-                .map(cr => `${cr.name} in ${cr.subdivisionCode}`)
-            if (otherAlternatives.length > 0) {
-                message += ` It could also be that ${otherAlternatives.join(' or ')} is meant.`
+            const otherAlternativesInOtherRegion = otherAlternatives.some(a => a.subdivisionCode !== closeResults.subdivisionCode)
+            if (otherAlternatives.length > 0 && otherAlternativesInOtherRegion) {
+                message += ` It could also be that ${getAlternativeNames(otherAlternatives)} is meant.`
+            } else {
+                message += "."
             }
             return message
         } else {
-            return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`
+            return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${getAlternativeNames(nominatimResult)}.`
         }
     } else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
         // Example: CNANP. First hit is somewhere else, but there is another which is close, and it's all in the same region. It's probably fine: continue
@@ -145,4 +143,27 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
     const allOptions = Array.from(options).join(' or ')
 
     return `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`
+}
+
+function getAlternativeNames(alternatives) {
+    let lastAlternativeName = ""
+    let regionsThisName = []
+
+    const mapped = alternatives.map(a => {
+        if (lastAlternativeName === a.name) {
+            if (regionsThisName.includes(a.subdivisionCode)) {
+                // No need for a Bagong in GX or GX (example: CNBGG)
+                return ""
+            } else {
+                regionsThisName.push(a.subdivisionCode)
+            }
+            return a.subdivisionCode
+        } else {
+            regionsThisName = [a.subdivisionCode]
+            lastAlternativeName = a.name
+            return `${a.name} in ${a.subdivisionCode}`
+        }
+    }).filter(a => a !== "")
+    const uniqueMapped = [...new Set(mapped)]
+    return uniqueMapped.join(' or ')
 }

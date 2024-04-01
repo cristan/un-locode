@@ -48,7 +48,7 @@ describe("EntryValidator", () => {
             ]
         }
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
-        expect(validateMessage).equals("https://unlocode.info/CNBAZ: (Bazhou): Invalid subdivision code 13! Please change the region to HE. It could also be that Bazhou District in SC or Bazhou in GZ or Bazhou in SX or Bazhou;Pa-chou in GZ or Bazhou in NM or Bazhou in GD or Bazhou in QH is meant.")
+        expect(validateMessage).equals("https://unlocode.info/CNBAZ: (Bazhou): Invalid subdivision code 13! Please change the region to HE. It could also be that Bazhou District in SC or Bazhou in GZ or SX or Bazhou;Pa-chou in GZ or Bazhou in NM or GD or QH is meant.")
     })
     it ("the wrong region is set (a close location is found in another region) - existing wrong location", async () => {
         const csvEntry = {
