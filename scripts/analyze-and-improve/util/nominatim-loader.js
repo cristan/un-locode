@@ -113,7 +113,11 @@ function filterOutUselessEntries(nominatimResult) {
 function addConvenienceAttributes(nominatimResult) {
     nominatimResult.forEach(n => {
         n.subdivisionCode = getSubdivisionCode(n)
-        n.sourceUrl =`https://www.openstreetmap.org/${n.osm_type}/${n.osm_id}`
+        let sourceUrl = `https://www.openstreetmap.org/${n.osm_type}/${n.osm_id}`
+        if (n.osm_type !== "relation") {
+            sourceUrl += `#map=12/${n.lat}/${n.lon}`
+        }
+        n.sourceUrl = sourceUrl
     })
     return nominatimResult
 }
