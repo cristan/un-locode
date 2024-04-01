@@ -85,6 +85,9 @@ export function readNominatimDataByCity(unlocode) {
 
 function filterOutUselessEntries(nominatimResult) {
     // Filter out anything which isn't a place, a boundary or a landuse (CNYTN)
+    // TODO: this might be problematic! I only detected that I needed landuse by accident
+    //  Also, maybe not use all landuses? The ones with type="industrial" we definitely need, but maybe we don't need type="commercial" (AESZS)
+    // Alternatively, we can filter out the ones we don't want
     const filteredByCategory = nominatimResult.filter(n => n.category === "place" || n.category === "boundary" || n.category === "landuse")
 
     // The isolated dwelling tag is used for named places that are smaller than a hamlet - no more than a few buildings
