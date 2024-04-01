@@ -124,3 +124,9 @@ describe("EntryValidator", () => {
         expect(validateMessage).equals(expected)
     })
 })
+
+// TODO: This is correct: it's not in HT
+//  https://unlocode.info/BSGTC: (Green Turtle Cay): No Green Turtle Cay found in HT! Green Turtle Cay (undefined) does exist at the provided coordinates, so the region should probably be changed to undefined..
+//  However, this isn't correct:
+//  https://unlocode.info/ATARN: (Auern): No Auern found in 4! Auern (undefined) does exist at the provided coordinates, so the region should probably be changed to undefined. It could also be that Auern in 3 is meant.
+//  That one is just fine: it doesn't doesn't have a region in Nominatim. Let's ignore both cases.
