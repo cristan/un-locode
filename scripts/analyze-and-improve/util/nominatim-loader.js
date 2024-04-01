@@ -123,5 +123,22 @@ function addConvenienceAttributes(nominatimResult) {
 }
 
 function getSubdivisionCode(nominatimElement) {
-    return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl4"]?.substring(3)
+    // In case of https://unlocode.info/CNHGQ, 4 over 3
+    // IT2AB, IT2C8, IT3YZ: 6 over 4
+    // In case of https://unlocode.info/BGGB4, BGNLS, we need level 15 instead of the level 6 (the only ones)
+    // In case of https://unlocode.info/BGSOF, we need level 6 instead of the level 15
+    // In case of https://unlocode.info/AZNAJ (the only level 3 in AZ, the rest are all level 5), we need level 3 instead of level 5
+    if (nominatimElement.address.country_code === "cz") {
+        // CZYHO: level 6 should be picked over 7. However, 1 only has 20A as level 7, and we can substring that to 20, which is Středočeský kraj,
+        // which translates to Central Bohemian Region which is the correct region
+        return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl7"]?.substring(3, 5)
+    }
+
+    return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ??
+        nominatimElement.address["ISO3166-2-lvl4"]?.substring(3) ??
+        nominatimElement.address["ISO3166-2-lvl3"]?.substring(3) ??
+        nominatimElement.address["ISO3166-2-lvl5"]?.substring(3) ??
+        nominatimElement.address["ISO3166-2-lvl7"]?.substring(3) ?? // https://unlocode.info/ADALV
+        nominatimElement.address["ISO3166-2-lvl8"]?.substring(3) ?? // https://unlocode.info/BSBKC
+        nominatimElement.address["ISO3166-2-lvl15"]?.substring(3) // https://unlocode.info/BGSOF (though this one is ignored)
 }
