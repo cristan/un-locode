@@ -50,31 +50,29 @@ export async function validateCoordinates(entry, nominatimData) {
         const subdivisionCodes = nominatimResult.map(nd => nd.subdivisionCode)
         const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
 
-        // const validSubdivisionCode = !!entry.subdivisionName
 
         const closeResults = nominatimResult.filter(n => {
             return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
         })
-        let message = `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}!`
-        // TODO: https://unlocode.info/CNUNA The region doesn't even exist.
-        // if (!validSubdivisionCode) {
-        //     message += `Invalid subdivision code ${entry.subdivisionCode}! `
-        // }
 
-        if (closeResults.length === 1) {
-            const closeResult = closeResults[0];
-            message += ` ${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
+        if (closeResults.length !== 0) {
+            const validSubdivisionCode = !!entry.subdivisionName
+            const closeResult = closeResults[0]
+            let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
+            if (!validSubdivisionCode) {
+                message += `Invalid subdivision code ${entry.subdivisionCode}! Please change the region to ${closeResult.subdivisionCode}.`
+            } else {
+                message += `No ${entry.city} found in ${entry.subdivisionCode}! ${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
+            }
             const otherAlternatives = nominatimResult
                 .filter(cr => {
-                    return cr !== closeResult
+                    return !closeResults.includes(cr)
                 })
                 .map(cr => `${cr.name} in ${cr.subdivisionCode}`)
             if (otherAlternatives.length > 0) {
                 message += ` It could also be that ${otherAlternatives.join(' or ')} is meant.`
             }
             return message
-        } else if (closeResults.length > 1) {
-            throw new Error(`${unlocode} Unexpected case`)
         } else {
             return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${entry.city} in ${Array.from(uniqueSubdivisionCodes).join(' or ')}`
         }
