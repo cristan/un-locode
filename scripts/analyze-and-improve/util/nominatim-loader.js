@@ -8,7 +8,9 @@ import {getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
  * Either loads via region, or when the entry doesn't have a subdivisionCode, or that doesn't yield results, it returns
  * the data via city only.
  *
- * Afterwards, {@link filterOutUselessEntries} and {@link addConvenienceAttributes} are called on the data.
+ * Both call {@link filterOutUselessEntries}.
+ *
+ * Afterwards, this method calls {@link addConvenienceAttributes} on the data.
  *
  * @param entry A CSV entry of a unlocode.
  */
@@ -20,19 +22,11 @@ export async function getNominatimData(entry) {
 
     const nominatimResult = nominatimData.result
 
-    const withoutUselessEntries = filterOutUselessEntries(nominatimResult);
-    if (withoutUselessEntries.length === 0) {
-        return undefined
-    }
+    addConvenienceAttributes(nominatimResult)
 
-    addConvenienceAttributes(withoutUselessEntries)
-
-    return { scrapeType: nominatimData.scrapeType, result: withoutUselessEntries }
+    return { scrapeType: nominatimData.scrapeType, result: nominatimResult }
 }
 
-/**
- *
- */
 async function loadNominatimData(entry) {
     const subdivisionCode = entry.subdivisionCode
     if (subdivisionCode) {
@@ -61,10 +55,11 @@ function readNominatimDataByRegion(entry) {
     // Example: this goes wrong at https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Laocheng&country=CN&state=CN-HI
     // Which also returns data in HA even though the provided state is CN-HI.
     const parsedAndFiltered = parsed.filter(nm => getSubdivisionCode(nm) === entry.subdivisionCode)
-    if (parsedAndFiltered.length === 0) {
+    const withoutUselessEntries = filterOutUselessEntries(parsedAndFiltered)
+    if (withoutUselessEntries.length === 0) {
         return undefined
     }
-    return parsedAndFiltered
+    return withoutUselessEntries
 }
 
 export function readNominatimDataByCity(unlocode) {
@@ -89,8 +84,8 @@ export function readNominatimDataByCity(unlocode) {
 }
 
 function filterOutUselessEntries(nominatimResult) {
-    // Filter out anything which isn't a place or a boundary
-    const filteredByCategory = nominatimResult.filter(n => n.category === "place" || n.category === "boundary")
+    // Filter out anything which isn't a place, a boundary or a landuse (CNYTN)
+    const filteredByCategory = nominatimResult.filter(n => n.category === "place" || n.category === "boundary" || n.category === "landuse")
 
     // The isolated dwelling tag is used for named places that are smaller than a hamlet - no more than a few buildings
     // Assume there are no unlocodes for places that small.
