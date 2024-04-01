@@ -120,7 +120,7 @@ describe("EntryValidator", () => {
         }
 
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
-        const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
+        const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (122 km away; source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
         expect(validateMessage).equals(expected)
     })
 })

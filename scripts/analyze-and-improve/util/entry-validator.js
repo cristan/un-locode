@@ -95,7 +95,7 @@ export async function validateCoordinates(entry, nominatimData) {
         if (biggestCloseLocationRank >= 18 && biggestLocationFromResultsRank <= 16) {
             // Example: https://unlocode.info/CNSTI
             const biggerResults = nominatimResult.filter(nm => nm.place_rank <= 16)
-            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertToUnlocode(b.lat, b.lon)} (source: ${b.sourceUrl})`).join(' or ')
+            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertToUnlocode(b.lat, b.lon)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
             return `https://unlocode.info/${unlocode}: (${entry.city}): The coordinates do point to ${closeItems[0].name}, but it's a small ${closeItems[0].addresstype} and you have the bigger ${biggerResultText}. Please doublecheck if this is pointing to the correct location.`
         }
         // Example: https://unlocode.info/CNBCO
