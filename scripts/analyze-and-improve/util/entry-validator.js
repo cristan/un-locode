@@ -51,14 +51,19 @@ export async function validateCoordinates(entry, nominatimData) {
             return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
         })
 
+        let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
+        const validSubdivisionCode = !!entry.subdivisionName
+        const closeResult = closeResults[0]
+        if (!validSubdivisionCode) {
+            message += `Invalid subdivision code ${entry.subdivisionCode}! `
+        } else {
+            message += `No ${entry.city} found in ${entry.subdivisionCode}! `
+        }
         if (closeResults.length !== 0) {
-            const validSubdivisionCode = !!entry.subdivisionName
-            const closeResult = closeResults[0]
-            let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
             if (!validSubdivisionCode) {
-                message += `Invalid subdivision code ${entry.subdivisionCode}! Please change the region to ${closeResult.subdivisionCode}.`
+                message += `Please change the region to ${closeResult.subdivisionCode}.`
             } else {
-                message += `No ${entry.city} found in ${entry.subdivisionCode}! ${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
+                message += `${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
             }
             const otherAlternatives = nominatimResult
                 .filter(cr => {
@@ -72,10 +77,28 @@ export async function validateCoordinates(entry, nominatimData) {
             }
             return message
         } else {
-            return `https://unlocode.info/${unlocode}: (${entry.city}): No ${entry.city} found in ${entry.subdivisionCode}! The subdivision code and coordinates should probably be updated to ${getAlternativeNames(nominatimResult)}.`
+            message +=`The subdivision code and coordinates should probably be updated to ${getAlternativeNames(nominatimResult)}`
+            if (nominatimResult.length === 1) {
+                const onlyResult = nominatimResult[0]
+                // Example: CNUNA. This warning is important: the nominatim result is actually wrong.
+                if (onlyResult.place_rank >= 19) {
+                    message += ` (WARN: small village)`
+                }
+                message += `. Source: ${nominatimResult[0].sourceUrl}`
+            }
+            return `${message}.`
         }
     } else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
-        // Example: CNANP. First hit is somewhere else, but there is another which is close, and it's all in the same region. It's probably fine: continue
+        let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)
+        const biggestCloseLocationRank = closeItems.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
+        const biggestLocationFromResultsRank = nominatimResult.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
+        if (biggestCloseLocationRank >= 18 && biggestLocationFromResultsRank <= 16) {
+            // Example: https://unlocode.info/CNSTI
+            const biggerResults = nominatimResult.filter(nm => nm.place_rank <= 16)
+            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertToUnlocode(b.lat, b.lon)} (source: ${b.sourceUrl})`).join(' or ')
+            return `https://unlocode.info/${unlocode}: (${entry.city}): The coordinates do point to ${closeItems[0].name}, but it's a small ${closeItems[0].addresstype} and you have the bigger ${biggerResultText}. Please doublecheck if this is pointing to the correct location.`
+        }
+        // Example: https://unlocode.info/CNBCO
     } else {
         // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
         // This means that either the coordinates are wrong, or the region is wrong.

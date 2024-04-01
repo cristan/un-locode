@@ -74,5 +74,53 @@ describe("EntryValidator", () => {
         const expected = "https://unlocode.info/ITCFL: (Filo): No Filo found in CR! Molino di Filo (RA) does exist at the provided coordinates, so the region should probably be changed to RA. It could also be that Via del Filo in AR or Molino Filo in MB is meant."
         expect(validateMessage).equals(expected)
     })
+    it ("nothing is logged when there's a good result at the coordinates, just not the first result", async () => {
+        const csvEntry = {
+            "city": "Bacao",
+            "country": "CN",
+            "location": "BCO",
+            "subdivisionCode": "GZ",
+            "subdivisionName": "Guizhou Sheng",
+            "coordinates": "2528N 10547E",
+            "date": "1401",
+            "unlocode": "CNBCO"
+        }
 
+        const nominatimResult = {
+            "scrapeType":"byRegion",
+            "result":[
+                {"place_id":207502998,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":4916974078,"lat":"26.811","lon":"109.416","category":"place","type":"village","place_rank":19,"importance":0.27501,"addresstype":"village","name":"Bacao","display_name":"Bacao, Tianzhu, Qiandongnan, Guizhou, China","address":{"village":"Bacao","county":"Tianzhu","region":"Qiandongnan","state":"Guizhou","ISO3166-2-lvl4":"CN-GZ","country":"China","country_code":"cn"},"boundingbox":["26.7910000","26.8310000","109.3960000","109.4360000"],"subdivisionCode":"GZ","sourceUrl":"https://www.openstreetmap.org/node/4916974078#map=12/26.811/109.416"},
+                {"place_id":207514486,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":4273376574,"lat":"25.4722","lon":"105.784","category":"place","type":"village","place_rank":19,"importance":0.27501,"addresstype":"village","name":"Bacao","display_name":"Bacao, Anshun, Guizhou, China","address":{"village":"Bacao","city":"Anshun","state":"Guizhou","ISO3166-2-lvl4":"CN-GZ","country":"China","country_code":"cn"},"boundingbox":["25.4522000","25.4922000","105.7640000","105.8040000"],"subdivisionCode":"GZ","sourceUrl":"https://www.openstreetmap.org/node/4273376574#map=12/25.4722/105.784"
+                }
+            ]
+        }
+
+        const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
+        expect(validateMessage).undefined
+    })
+    it ("the coordinates point to a real place, but there's a much bigger one too, which might be the one they mean", async () => {
+        const csvEntry = {
+            "city": "Shatian",
+            "country": "CN",
+            "location": "STI",
+            "subdivisionCode": "GD",
+            "subdivisionName": "Guangdong Sheng",
+            "coordinates": "2359N 11354E",
+            "date": "1401",
+            "unlocode": "CNSTI"
+        }
+
+        const nominatimResult = {
+            "scrapeType":"byRegion",
+            "result":[
+                {"place_id":205785137,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":5664242,"lat":"22.9223476","lon":"113.6129572","category":"boundary","type":"administrative","place_rank":16,"importance":0.37242196006679895,"addresstype":"town","name":"Shatian Town","display_name":"Shatian Town, Dongguan, Guangdong Province, China","address":{"town":"Shatian Town","city":"Dongguan","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["22.8077575","22.9952075","113.5364764","113.6509520"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/relation/5664242"},
+                {"place_id":197681606,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":2065846911,"lat":"24.4498957","lon":"112.5055354","category":"place","type":"village","place_rank":19,"importance":0.27501,"addresstype":"village","name":"Shatian","display_name":"Shatian, Qingyuan City, Guangdong Province, China","address":{"village":"Shatian","city":"Qingyuan City","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["24.4298957","24.4698957","112.4855354","112.5255354"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/2065846911#map=12/24.4498957/112.5055354"},
+                {"place_id":207748310,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":2065846845,"lat":"21.9084502","lon":"110.7026725","category":"place","type":"village","place_rank":19,"importance":0.27501,"addresstype":"village","name":"Shatian","display_name":"Shatian, Maoming City, Guangdong Province, China","address":{"village":"Shatian","city":"Maoming City","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["21.8884502","21.9284502","110.6826725","110.7226725"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/2065846845#map=12/21.9084502/110.7026725"},{"place_id":206399262,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":8093021406,"lat":"22.2034779","lon":"112.8524101","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Shatian","display_name":"Shatian, Taishan, Jiangmen, Guangdong Province, China","address":{"hamlet":"Shatian","county":"Taishan","city":"Jiangmen","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["22.1834779","22.2234779","112.8324101","112.8724101"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/8093021406#map=12/22.2034779/112.8524101"},{"place_id":205293114,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":8750182300,"lat":"22.1666753","lon":"111.1879384","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Shatian","display_name":"Shatian, Gaozhou City, Maoming City, Guangdong Province, China","address":{"hamlet":"Shatian","county":"Gaozhou City","city":"Maoming City","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["22.1466753","22.1866753","111.1679384","111.2079384"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/8750182300#map=12/22.1666753/111.1879384"},{"place_id":383077924,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":11680375557,"lat":"23.4096933","lon":"111.4186946","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Shatian","display_name":"Shatian, Jiangchuan, Fengkai County, Zhaoqing City, Guangdong Province, China","address":{"hamlet":"Shatian","town":"Jiangchuan","county":"Fengkai County","city":"Zhaoqing City","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["23.3896933","23.4296933","111.3986946","111.4386946"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/11680375557#map=12/23.4096933/111.4186946"},{"place_id":207159372,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":8316066287,"lat":"23.9983203","lon":"113.9217169","category":"place","type":"town","place_rank":18,"importance":0.22887635671362175,"addresstype":"town","name":"Shatian","display_name":"Shatian, Xinfeng County, Shaoguan, Guangdong Province, China","address":{"town":"Shatian","city":"Xinfeng County","region":"Shaoguan","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["23.9583203","24.0383203","113.8817169","113.9617169"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/8316066287#map=12/23.9983203/113.9217169"},{"place_id":206773464,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":3154256875,"lat":"22.8694187","lon":"114.5464066","category":"place","type":"town","place_rank":18,"importance":0.22887635671362175,"addresstype":"town","name":"Shatian","display_name":"Shatian, Huizhou, Guangdong Province, China","address":{"town":"Shatian","city":"Huizhou","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["22.8294187","22.9094187","114.5064066","114.5864066"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/3154256875#map=12/22.8694187/114.5464066"},{"place_id":199992387,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":687192299,"lat":"24.1353247","lon":"116.440256","category":"place","type":"village","place_rank":19,"importance":0.27501,"addresstype":"village","name":"砂田","display_name":"砂田, Meizhou, Guangdong Province, China","address":{"village":"砂田","city":"Meizhou","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["24.1153247","24.1553247","116.4202560","116.4602560"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/687192299#map=12/24.1353247/116.440256"},{"place_id":384275488,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":11729754504,"lat":"23.5831289","lon":"111.8139807","category":"place","type":"hamlet","place_rank":20,"importance":0.1333433333333333,"addresstype":"hamlet","name":"Shatian","display_name":"Shatian, Fengkai County, Zhaoqing City, Guangdong Province, China","address":{"hamlet":"Shatian","county":"Fengkai County","city":"Zhaoqing City","state":"Guangdong Province","ISO3166-2-lvl4":"CN-GD","country":"China","country_code":"cn"},"boundingbox":["23.5631289","23.6031289","111.7939807","111.8339807"],"subdivisionCode":"GD","sourceUrl":"https://www.openstreetmap.org/node/11729754504#map=12/23.5831289/111.8139807"}
+            ]
+        }
+
+        const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
+        const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
+        expect(validateMessage).equals(expected)
+    })
 })

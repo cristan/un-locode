@@ -28,7 +28,7 @@ async function validateAllCoordinates() {
 
         const generatedLog = await validateCoordinates(entry, nominatimData)
         if (generatedLog) {
-            console.log(generatedLog)
+            console.log(generatedLog + "\n")
         }
     }
 }
