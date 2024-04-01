@@ -145,3 +145,9 @@ function getSubdivisionCode(nominatimElement) {
         nominatimElement.address["ISO3166-2-lvl8"]?.substring(3) ?? // https://unlocode.info/BSBKC
         nominatimElement.address["ISO3166-2-lvl15"]?.substring(3) // https://unlocode.info/BGSOF (though this one is ignored)
 }
+
+export function isSmallVillage(nominatimElement) {
+    // Warn about small villages: it's not that likely there's a unlocode for villages or hamlets
+    // Industrial results can have a very low rank, but can be very relevant for us, so don't warn about those. Example: CNYTN
+    return nominatimElement.place_rank >= 19 && nominatimElement.addresstype !== "industrial"
+}

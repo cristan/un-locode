@@ -1,6 +1,6 @@
 import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
-import {readNominatimDataByCity} from "./nominatim-loader.js";
+import {isSmallVillage, readNominatimDataByCity} from "./nominatim-loader.js";
 
 /**
  * Checks if the coordinates don't match the first hit on Nominatim and returns an as helpful error message as possible.
@@ -81,7 +81,7 @@ export async function validateCoordinates(entry, nominatimData) {
             if (nominatimResult.length === 1) {
                 const onlyResult = nominatimResult[0]
                 // Example: CNUNA. This warning is important: the nominatim result is actually wrong.
-                if (onlyResult.place_rank >= 19) {
+                if (isSmallVillage(onlyResult)) {
                     message += ` (WARN: small village)`
                 }
                 message += `. Source: ${nominatimResult[0].sourceUrl}`
@@ -92,7 +92,7 @@ export async function validateCoordinates(entry, nominatimData) {
         let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)
         const biggestCloseLocationRank = closeItems.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         const biggestLocationFromResultsRank = nominatimResult.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
-        if (biggestCloseLocationRank >= 18 && biggestLocationFromResultsRank <= 16) {
+        if (biggestCloseLocationRank >= 18 && biggestCloseLocationRank.addresstype !== "industrial" && biggestLocationFromResultsRank <= 16) {
             // Example: https://unlocode.info/CNSTI
             const biggerResults = nominatimResult.filter(nm => nm.place_rank <= 16)
             const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertToUnlocode(b.lat, b.lon)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
@@ -127,7 +127,7 @@ export async function validateCoordinates(entry, nominatimData) {
                     if (onlyResult.name !== entry.city) {
                         message += ` where ${onlyResult.name} (in ${onlyResult.subdivisionCode}) is located`
                     }
-                    if (onlyResult.place_rank >= 19) {
+                    if (isSmallVillage(onlyResult)) {
                         message += ` (WARN: small village)`
                     }
                     message += "."
@@ -151,7 +151,7 @@ export async function validateCoordinates(entry, nominatimData) {
 
 function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode) {
     const options = nominatimResult.map(nm => {
-        const smallVillage = nm.place_rank >= 19
+        const smallVillage = isSmallVillage(nm)
         const before = smallVillage ? "maybe " : ""
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon))
         let after = ""
