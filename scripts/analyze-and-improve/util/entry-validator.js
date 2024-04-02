@@ -195,18 +195,19 @@ function getAlternativeNames(alternatives) {
     let regionsThisName = []
 
     const mapped = alternatives.map(a => {
+        const subdivisionCode = a.subdivisionCode ?? "<unspecified subdivision>"
         if (lastAlternativeName === a.name) {
-            if (regionsThisName.includes(a.subdivisionCode)) {
+            if (regionsThisName.includes(subdivisionCode)) {
                 // No need for a Bagong in GX or GX (example: CNBGG)
                 return ""
             } else {
-                regionsThisName.push(a.subdivisionCode)
+                regionsThisName.push(subdivisionCode)
             }
-            return a.subdivisionCode
+            return subdivisionCode
         } else {
-            regionsThisName = [a.subdivisionCode]
+            regionsThisName = [subdivisionCode]
             lastAlternativeName = a.name
-            return `${a.name} in ${a.subdivisionCode}`
+            return `${a.name} in ${subdivisionCode}`
         }
     }).filter(a => a !== "")
     const uniqueMapped = [...new Set(mapped)]
