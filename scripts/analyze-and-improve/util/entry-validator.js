@@ -44,7 +44,7 @@ export async function validateCoordinates(entry, nominatimData) {
             }
             return toLog
         } else {
-            getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
+            return getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
         }
     } else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
         const closeResults = nominatimResult.filter(n => {
