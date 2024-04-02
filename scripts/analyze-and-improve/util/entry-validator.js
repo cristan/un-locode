@@ -57,13 +57,20 @@ export async function validateCoordinates(entry, nominatimData) {
 
         let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
         const validSubdivisionCode = !!entry.subdivisionName
-        const closeResult = closeResults[0]
         if (!validSubdivisionCode) {
             message += `Invalid subdivision code ${entry.subdivisionCode}! `
         } else {
             message += `No ${entry.city} found in ${entry.subdivisionCode}! `
         }
         if (closeResults.length !== 0) {
+            const closeResult = closeResults[0]
+            if (scrapeType === "byCity" && !closeResult.subdivisionCode) {
+                // We couldn't find it by region, but we can find a close one by city and that one doesn't have a region set.
+                // This means that the region simply isn't set in OpenStreetMap, so we can't validate this: ignore.
+                // (this is valid for ATARN: (Auern) which is a false positive, but invalid for BSGTC (Green Turtle Cay),
+                // but without any data in OpenStreetMap, there's no way to validate this.
+                return undefined
+            }
             if (!validSubdivisionCode) {
                 message += `Please change the region to ${closeResult.subdivisionCode}.`
             } else {

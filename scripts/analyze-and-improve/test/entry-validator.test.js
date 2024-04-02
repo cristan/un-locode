@@ -123,6 +123,31 @@ describe("EntryValidator", () => {
         const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (122 km away; source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
         expect(validateMessage).equals(expected)
     })
+    it ("the entry doesn't have a region in Nominatim", async () => {
+        const csvEntry = {
+            "city": "Auern",
+            "country": "AT",
+            "location": "ARN",
+            "subdivisionCode": "4",
+            "subdivisionName": "Oberösterreich",
+            "coordinates": "4759N 01407E",
+            "date": "1101",
+            "unlocode": "ATARN"
+        }
+
+         const nominatimResult = {
+            // It couldn't find it by region
+            "scrapeType":"byCity",
+             "result":[
+                 {"place_id":144762788,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":240119835,"lat":"48.1390796","lon":"15.6944672","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Auern","display_name":"Auern, Gemeinde Pyhra, Bezirk St. Pölten, Lower Austria, 3143, Austria","address":{"hamlet":"Auern","city":"Gemeinde Pyhra","county":"Bezirk St. Pölten","state":"Lower Austria","ISO3166-2-lvl4":"AT-3","postcode":"3143","country":"Austria","country_code":"at"},"boundingbox":["48.1190796","48.1590796","15.6744672","15.7144672"],"subdivisionCode":"3","sourceUrl":"https://www.openstreetmap.org/node/240119835#map=12/48.1390796/15.6944672"},
+                 // The correct result, but without region, because this isn't set in OpenStreetMap
+                 {"place_id":89686151,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":240120105,"lat":"47.9787604","lon":"14.1179411","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Auern","display_name":"Auern, Nußbach, Bezirk Kirchdorf, 4542, Austria","address":{"hamlet":"Auern","village":"Nußbach","county":"Bezirk Kirchdorf","postcode":"4542","country":"Austria","country_code":"at"},"boundingbox":["47.9587604","47.9987604","14.0979411","14.1379411"],"sourceUrl":"https://www.openstreetmap.org/node/240120105#map=12/47.9787604/14.1179411"}
+             ]
+        }
+
+        const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
+        expect(validateMessage).undefined
+    })
 })
 
 // TODO: This is correct: it's not in HT
