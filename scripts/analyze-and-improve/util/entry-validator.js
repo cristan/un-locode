@@ -14,18 +14,23 @@ export async function validateCoordinates(entry, nominatimData) {
         // Invalid coordinates are already handled by the validate-coordinates.js.
         return
     }
+    const unlocode = entry.unlocode
     const nominatimResult = nominatimData.result
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
     if (distance < 100) {
-        // The first result is close enough.
-        return
+        // The first result is close enough. Let's validate whether the subdivisionCode exists yet though
+        if (entry.subdivisionCode && !entry.subdivisionName) {
+            const closeResults = nominatimResult.filter(n => {
+                return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+            })
+            return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
+        }
     }
     const scrapeType = nominatimData.scrapeType
     let nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
     if (scrapeType === "byRegion") {
         nominatimQuery += `&state=${entry.country}-${entry.subdivisionCode}`
     }
-    const unlocode = entry.unlocode
     if (scrapeType === "byRegion" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
         throw new Error(`https://unlocode.info/${unlocode} has unexpected region stuff going on. ${nominatimQuery}`)
     }
@@ -79,19 +84,17 @@ export async function validateCoordinates(entry, nominatimData) {
                 return undefined
             }
             if (!validSubdivisionCode) {
-                message += `Please change the region to ${closeResult.subdivisionCode}.`
+                message += `Please change the region to ${closeResult.subdivisionCode}`
             } else {
                 message += `${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
             }
             const otherAlternatives = nominatimResult
-                .filter(cr => {
-                    return !closeResults.includes(cr)
+                .filter(nm => {
+                    return nm !== closeResult
                 })
             const otherAlternativesInOtherRegion = otherAlternatives.some(a => a.subdivisionCode !== closeResults.subdivisionCode)
             if (otherAlternatives.length > 0 && otherAlternativesInOtherRegion) {
                 message += ` It could also be that ${getAlternativeNames(otherAlternatives)} is meant.`
-            } else {
-                message += "."
             }
             return message
         } else {
@@ -212,4 +215,20 @@ function getAlternativeNames(alternatives) {
     }).filter(a => a !== "")
     const uniqueMapped = [...new Set(mapped)]
     return uniqueMapped.join(' or ')
+}
+
+function getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults) {
+    let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
+    message += `Invalid subdivision code ${entry.subdivisionCode}! `
+    const closeResult = closeResults[0]
+    message += `Please change the region to ${closeResult.subdivisionCode}.`
+    const otherAlternatives = nominatimResult
+        .filter(nm => {
+            return nm !== closeResult
+        })
+    const otherAlternativesInOtherRegion = otherAlternatives.some(a => a.subdivisionCode !== closeResults.subdivisionCode)
+    if (otherAlternatives.length > 0 && otherAlternativesInOtherRegion) {
+        message += ` It could also be that ${getAlternativeNames(otherAlternatives)} is meant.`
+    }
+    return message
 }
