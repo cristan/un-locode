@@ -37,6 +37,13 @@ export async function validateCoordinates(entry, nominatimData) {
             return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
         })
         if (closeResults.length !== 0) {
+            const closeResult = closeResults[0]
+            if (scrapeType === "byCity" && !closeResult.subdivisionCode) {
+                // We couldn't find it by region, but we can find a close one by city and that one doesn't have a region set.
+                // This means that the region simply isn't set in OpenStreetMap, so we can't validate this: ignore.
+                // (this the case for ATARN which is a false positive)
+                return undefined
+            }
             const subdivisionCodes = closeResults.map(nd => nd.subdivisionCode)
             const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
             const suggestedRegion = Array.from(uniqueSubdivisionCodes).join(' or ')

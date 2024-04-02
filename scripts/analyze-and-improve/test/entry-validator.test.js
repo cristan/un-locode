@@ -123,7 +123,7 @@ describe("EntryValidator", () => {
         const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (122 km away; source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
         expect(validateMessage).equals(expected)
     })
-    it ("the entry doesn't have a region in Nominatim", async () => {
+    it ("the entry doesn't have a region in Nominatim - 1", async () => {
         const csvEntry = {
             "city": "Auern",
             "country": "AT",
@@ -148,10 +148,25 @@ describe("EntryValidator", () => {
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
         expect(validateMessage).undefined
     })
-})
+    it ("the entry doesn't have a region in Nominatim - 2", async () => {
+        const csvEntry = {
+            "city": "Bække",
+            "country": "DK",
+            "location": "BKK",
+            "subdivisionCode": "",
+            "coordinates": "5534N 00909E",
+            "date": "0907",
+            "unlocode": "DKBKK"
+        }
 
-// TODO: This is correct: it's not in HT
-//  https://unlocode.info/BSGTC: (Green Turtle Cay): No Green Turtle Cay found in HT! Green Turtle Cay (undefined) does exist at the provided coordinates, so the region should probably be changed to undefined..
-//  However, this isn't correct:
-//  https://unlocode.info/ATARN: (Auern): No Auern found in 4! Auern (undefined) does exist at the provided coordinates, so the region should probably be changed to undefined. It could also be that Auern in 3 is meant.
-//  That one is just fine: it doesn't doesn't have a region in Nominatim. Let's ignore both cases.
+        const nominatimResult = {
+            "scrapeType":"byCity",
+            "result":[
+                {"place_id":371477953,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":11287832480,"lat":"56.400481","lon":"8.2081627","category":"place","type":"hamlet","place_rank":20,"importance":0.25000999999999995,"addresstype":"hamlet","name":"Bække","display_name":"Bække, Lemvig Municipality, Central Denmark Region, 7650, Denmark","address":{"hamlet":"Bække","municipality":"Lemvig Municipality","state":"Central Denmark Region","ISO3166-2-lvl4":"DK-82","postcode":"7650","country":"Denmark","country_code":"dk"},"boundingbox":["56.3804810","56.4204810","8.1881627","8.2281627"],"subdivisionCode":"82","sourceUrl":"https://www.openstreetmap.org/node/11287832480#map=12/56.400481/8.2081627"},{"place_id":164580907,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":5599712073,"lat":"55.5702937","lon":"9.1377573","category":"place","type":"village","place_rank":19,"importance":0.24698155929085722,"addresstype":"village","name":"Bække","display_name":"Bække, Vejen Municipality, 6622, Denmark","address":{"village":"Bække","municipality":"Vejen Municipality","postcode":"6622","country":"Denmark","country_code":"dk"},"boundingbox":["55.5502937","55.5902937","9.1177573","9.1577573"],"sourceUrl":"https://www.openstreetmap.org/node/5599712073#map=12/55.5702937/9.1377573"}
+            ]
+        }
+
+        const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
+        expect(validateMessage).undefined
+    })
+})
