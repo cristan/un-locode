@@ -10,6 +10,8 @@ async function start() {
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
         if (!decimalCoordinates) {// || entry.country !== "CN"
+            // No need to download the entries who don't have coordinates in unlocode for now:
+            // let's first focus on correcting the coordinates who are in there.
             continue
         }
 
