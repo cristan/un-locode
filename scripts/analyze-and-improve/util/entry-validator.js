@@ -29,6 +29,8 @@ export async function validateCoordinates(entry, nominatimData) {
     if (scrapeType === "byRegion" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
         throw new Error(`https://unlocode.info/${unlocode} has unexpected region stuff going on. ${nominatimQuery}`)
     }
+    const allInCorrectRegion = nominatimResult.every(n => n.subdivisionCode === entry.subdivisionCode)
+
     if (!entry.subdivisionCode) {
         // It could be that the first result is just the wrong one. Let's see if we can find a close one (which probably is the correct one)
         const closeResults = nominatimResult.filter(n => {
@@ -46,7 +48,9 @@ export async function validateCoordinates(entry, nominatimData) {
         } else {
             return getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
         }
-    } else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
+    }
+    else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
+        // First hit doesn't match the subdivision code, and we scraped by city (so we couldn't find anything with the matching region).
         const closeResults = nominatimResult.filter(n => {
             return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
         })
@@ -88,7 +92,9 @@ export async function validateCoordinates(entry, nominatimData) {
             }
             return `${message}.`
         }
-    } else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
+    }
+    else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
+        // Wrong first hit in Nominatim, but there's actually a hit which does match the coordinates
         let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)
         const biggestCloseLocationRank = closeItems.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         const biggestLocationFromResultsRank = nominatimResult.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
@@ -99,53 +105,55 @@ export async function validateCoordinates(entry, nominatimData) {
             return `https://unlocode.info/${unlocode}: (${entry.city}): The coordinates do point to ${closeItems[0].name}, but it's a small ${closeItems[0].addresstype} and you have the bigger ${biggerResultText}. Please doublecheck if this is pointing to the correct location.`
         }
         // Example: https://unlocode.info/CNBCO
-    } else {
+    }
+    else if (scrapeType === "byRegion" && allInCorrectRegion) {
         // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
         // This means that either the coordinates are wrong, or the region is wrong.
         // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
-        const allInCorrectRegion = nominatimResult.every(n => n.subdivisionCode === entry.subdivisionCode)
-        if (scrapeType === "byRegion" && allInCorrectRegion) {
-            await downloadByCityIfNeeded(entry)
-            const nominatimDataByCity = readNominatimDataByCity(unlocode).result
 
-            let closestDistance = Number.MAX_VALUE
-            let closestInAnyRegion = undefined
-            nominatimDataByCity.forEach(c => {
-                const distance = getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, c.lat, c.lon);
-                if (distance < closestDistance) {
-                    closestInAnyRegion = c
-                    closestDistance = distance
-                }
-            })
+        await downloadByCityIfNeeded(entry)
+        const nominatimDataByCity = readNominatimDataByCity(unlocode).result
 
-            if (closestDistance < 25) {
-                const detectedSubdivisionCode = closestInAnyRegion.subdivisionCode
-                let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
-                if (nominatimResult.length === 1) {
-                    const onlyResult = nominatimResult[0];
-                    message += `${convertToUnlocode(onlyResult.lat, onlyResult.lon)} (${closestInAnyRegion.sourceUrl})`
-                    if (onlyResult.name !== entry.city) {
-                        message += ` where ${onlyResult.name} (in ${onlyResult.subdivisionCode}) is located`
-                    }
-                    if (isSmallVillage(onlyResult)) {
-                        message += ` (WARN: small village)`
-                    }
-                    message += "."
-                } else {
-                    message += `any of the ${nominatimResult.length} locations in ${entry.subdivisionCode}.`
-                }
-                return message
-            } else {
-                // Nothing close found when searching for any region either. The location is probably just wrong.
-                if (entry.subdivisionCode !== nominatimResult[0].subdivisionCode) {
-                    throw new Error(`${unlocode} This shouldn't be possible`)
-                }
-
-                return getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
+        let closestDistance = Number.MAX_VALUE
+        let closestInAnyRegion = undefined
+        nominatimDataByCity.forEach(c => {
+            const distance = getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, c.lat, c.lon);
+            if (distance < closestDistance) {
+                closestInAnyRegion = c
+                closestDistance = distance
             }
+        })
+
+        if (closestDistance < 25) {
+            const detectedSubdivisionCode = closestInAnyRegion.subdivisionCode
+            let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
+            if (nominatimResult.length === 1) {
+                const onlyResult = nominatimResult[0];
+                message += `${convertToUnlocode(onlyResult.lat, onlyResult.lon)} (${closestInAnyRegion.sourceUrl})`
+                if (onlyResult.name !== entry.city) {
+                    message += ` where ${onlyResult.name} (in ${onlyResult.subdivisionCode}) is located`
+                }
+                if (isSmallVillage(onlyResult)) {
+                    message += ` (WARN: small village)`
+                }
+                message += "."
+            } else {
+                message += `any of the ${nominatimResult.length} locations in ${entry.subdivisionCode}.`
+            }
+            return message
         } else {
-            throw new Error(`https://unlocode.info/${unlocode} Unexpected status encountered`)
+            // Nothing close found when searching for any region either. The location is probably just wrong.
+            if (entry.subdivisionCode !== nominatimResult[0].subdivisionCode) {
+                throw new Error(`${unlocode} This shouldn't be possible`)
+            }
+
+            return getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
         }
+    }
+    else {
+        // No special cases whatsoever. Just return the regular wrong coordinates output.
+        // This is actually pretty rare. Example: https://unlocode.info/EEMAR
+        return getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unlocode)
     }
 }
 
