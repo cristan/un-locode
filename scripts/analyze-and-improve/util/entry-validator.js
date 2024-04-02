@@ -67,7 +67,7 @@ export async function validateCoordinates(entry, nominatimData) {
             if (scrapeType === "byCity" && !closeResult.subdivisionCode) {
                 // We couldn't find it by region, but we can find a close one by city and that one doesn't have a region set.
                 // This means that the region simply isn't set in OpenStreetMap, so we can't validate this: ignore.
-                // (this is valid for ATARN: (Auern) which is a false positive, but invalid for BSGTC (Green Turtle Cay),
+                // (this is valid for ATARN: (Auern) which is a false positive, but maybe is invalid for BSGTC (Green Turtle Cay, unclear what the region actually is)
                 // but without any data in OpenStreetMap, there's no way to validate this.
                 return undefined
             }
