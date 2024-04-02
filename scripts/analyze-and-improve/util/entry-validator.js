@@ -84,7 +84,7 @@ export async function validateCoordinates(entry, nominatimData) {
                 return undefined
             }
             if (!validSubdivisionCode) {
-                message += `Please change the region to ${closeResult.subdivisionCode}`
+                message += `Please change the region to ${closeResult.subdivisionCode}.`
             } else {
                 message += `${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
             }
