@@ -34,9 +34,13 @@ async function validateAllCoordinates() {
             if (!useHtml) {
                 console.log(generatedLog + "\n")
             } else {
+
+                const urlReplacement = "https://www.openstreetmap.org/#map=12/$2/$3"
+                // const urlReplacement = "https://www.google.com/maps/@$2,$3,12z"
+
                 const html = generatedLog
                     .replaceAll(/https:\/\/unlocode\.info\/(\w{5})/g, '<a href="$&">$1</a>')
-                    .replaceAll(/(\d*N\s\d*E) \(([\d\\.]*), ([\d\\.]*)\)/g, '<a href="https://www.google.com/maps/place/$2,$3">$1</a>')
+                    .replaceAll(/(\d*N\s\d*E) \(([\d\\.]*), ([\d\\.]*)\)/g, `<a href="${urlReplacement}">$1</a>`)
                     +"<br><br>"
                 console.log(html)
             }

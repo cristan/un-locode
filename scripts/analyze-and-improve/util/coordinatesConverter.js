@@ -32,8 +32,8 @@ export function convertToDecimal(input) {
     }
 }
 
-export function convertToUnlocodeText(deximalLat, decimalLon) {
-    return `${convertToUnlocode(deximalLat, deximalLat)} (${deximalLat}, ${deximalLat})`
+export function convertNmToUnlocodeText(nm) {
+    return `<a href="${nm.sourceUrl}">${convertToUnlocode(nm.lat, nm.lon)}</a>`
 }
 
 export function convertToUnlocode(decimalLat, decimalLon) {

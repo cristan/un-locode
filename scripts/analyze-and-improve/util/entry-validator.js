@@ -1,6 +1,6 @@
 import {
+    convertNmToUnlocodeText,
     convertToDecimal,
-    convertToUnlocodeText,
     getDistanceFromLatLonInKm
 } from "./coordinatesConverter.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
@@ -122,7 +122,7 @@ export async function validateCoordinates(entry, nominatimData) {
         if (biggestCloseLocationRank >= 18 && biggestCloseLocationRank.addresstype !== "industrial" && biggestLocationFromResultsRank <= 16) {
             // Example: https://unlocode.info/CNSTI
             const biggerResults = nominatimResult.filter(nm => nm.place_rank <= 16)
-            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertToUnlocodeText(b.lat, b.lon)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
+            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertNmToUnlocodeText(b)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
             return `https://unlocode.info/${unlocode}: (${entry.city}): The coordinates do point to ${closeItems[0].name}, but it's a small ${closeItems[0].addresstype} and you have the bigger ${biggerResultText}. Please doublecheck if this is pointing to the correct location.`
         }
         // Example: https://unlocode.info/CNBCO
@@ -150,7 +150,7 @@ export async function validateCoordinates(entry, nominatimData) {
             let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
             if (nominatimResult.length === 1) {
                 const onlyResult = nominatimResult[0];
-                message += `${convertToUnlocodeText(onlyResult.lat, onlyResult.lon)} (${closestInAnyRegion.sourceUrl})`
+                message += `${convertNmToUnlocodeText(onlyResult)} (${closestInAnyRegion.sourceUrl})`
                 if (onlyResult.name !== entry.city) {
                     message += ` where ${onlyResult.name} (in ${onlyResult.subdivisionCode}) is located`
                 }
@@ -190,7 +190,7 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
         if (smallVillage) {
             after += ` (WARN: small village)`
         }
-        return `${before}${convertToUnlocodeText(nm.lat, nm.lon)} = ${distance} km${distance > 1000 ? '(!)' : ""} away${after}; source: ${nm.sourceUrl}`
+        return `${before}${convertNmToUnlocodeText(nm)} = ${distance} km${distance > 1000 ? '(!)' : ""} away${after}; source: ${nm.sourceUrl}`
     })
     const allOptions = Array.from(options).join(' or ')
 
@@ -210,11 +210,11 @@ function getAlternativeNames(alternatives) {
             } else {
                 regionsThisName.push(subdivisionCode)
             }
-            return subdivisionCode
+            return `${subdivisionCode} (${convertNmToUnlocodeText(a)})`
         } else {
             regionsThisName = [subdivisionCode]
             lastAlternativeName = a.name
-            return `${a.name} in ${subdivisionCode}`
+            return `${a.name} in ${subdivisionCode} (${convertNmToUnlocodeText(a)})`
         }
     }).filter(a => a !== "")
     const uniqueMapped = [...new Set(mapped)]
