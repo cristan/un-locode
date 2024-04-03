@@ -32,6 +32,10 @@ export function convertToDecimal(input) {
     }
 }
 
+export function convertToUnlocodeText(deximalLat, decimalLon) {
+    return `${convertToUnlocode(deximalLat, deximalLat)} (${deximalLat}, ${deximalLat})`
+}
+
 export function convertToUnlocode(decimalLat, decimalLon) {
     const latDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLat));
     const lonDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLon));

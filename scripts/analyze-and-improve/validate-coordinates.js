@@ -8,11 +8,13 @@ async function validateAllCoordinates() {
 
     const csvDatabase = await readCsv()
 
+    console.log()
+
     for (const unlocode of Object.keys(csvDatabase)) {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "IT") {
+        if (!decimalCoordinates || entry.country !== "CN") {
             continue
         }
 
@@ -28,7 +30,16 @@ async function validateAllCoordinates() {
 
         const generatedLog = await validateCoordinates(entry, nominatimData)
         if (generatedLog) {
-            console.log(generatedLog + "\n")
+            const useHtml = true
+            if (!useHtml) {
+                console.log(generatedLog + "\n")
+            } else {
+                const html = generatedLog
+                    .replaceAll(/https:\/\/unlocode\.info\/(\w{5})/g, '<a href="$&">$1</a>')
+                    .replaceAll(/(\d*N\s\d*E) \(([\d\\.]*), ([\d\\.]*)\)/g, '<a href="https://www.google.com/maps/place/$2,$3">$1</a>')
+                    +"<br><br>"
+                console.log(html)
+            }
         }
     }
 }
