@@ -3,6 +3,7 @@ import fs from "node:fs"
 const UNLOCODE_COLUMN_COUNTRY = 1
 const UNLOCODE_COLUMN_LOCATION = 2
 const UNLOCODE_COLUMN_CITY = 3
+const UNLOCODE_COLUMN_NAME_WITHOUT_DIACRITICS = 4
 const UNLOCODE_COLUMN_SUBDIVISION = 5
 const UNLOCODE_COLUMN_COORDINATES = 10
 const UNLOCODE_COLUMN_DATE = 8
@@ -37,11 +38,12 @@ export async function readCsv() {
         const location = columns[UNLOCODE_COLUMN_LOCATION];
         const unlocode = `${country}${location}`
         const city = columns[UNLOCODE_COLUMN_CITY]
+        const nameWithoutDiacritics = columns[UNLOCODE_COLUMN_NAME_WITHOUT_DIACRITICS]
         const subdivisionCode = columns[UNLOCODE_COLUMN_SUBDIVISION]
         const subdivisionName = subdivisionDatabase[`${country}|${subdivisionCode}`]
         const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
         const date = columns[UNLOCODE_COLUMN_DATE]
-        csvDatabase[unlocode] = { city, country, location, subdivisionCode, subdivisionName, coordinates, date, unlocode }
+        csvDatabase[unlocode] = { city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, coordinates, date, unlocode }
     }
     return csvDatabase
 }
