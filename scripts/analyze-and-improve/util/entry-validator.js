@@ -56,7 +56,8 @@ export async function validateCoordinates(entry, nominatimData) {
             const subdivisionCodes = closeResults.map(nd => nd.subdivisionCode)
             const uniqueSubdivisionCodes = [...new Set(subdivisionCodes)]
             const suggestedRegion = Array.from(uniqueSubdivisionCodes).join(' or ')
-            let toLog = `https://unlocode.info/${unlocode}: (${entry.city}): There are ${nominatimResult.length} different results for ${entry.city} in ${entry.country}. Let's set the region to ${suggestedRegion} to avoid the confusion.`
+            const differentResults = nominatimResult.length === 1 ? "There is 1 different result": `There are ${nominatimResult.length} different results`;
+            let toLog = `https://unlocode.info/${unlocode}: (${entry.city}): ${differentResults} for ${entry.city} in ${entry.country}. Let's set the region to ${suggestedRegion} to avoid the confusion.`
             if (closeResults.length === 1) {
                 toLog += ` Source: ${closeResults[0].sourceUrl}`
             }
