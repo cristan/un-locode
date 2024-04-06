@@ -1,12 +1,17 @@
 import fs from "node:fs"
 
+const UNLOCODE_COLUMN_CHANGE = 0
 const UNLOCODE_COLUMN_COUNTRY = 1
 const UNLOCODE_COLUMN_LOCATION = 2
 const UNLOCODE_COLUMN_CITY = 3
 const UNLOCODE_COLUMN_NAME_WITHOUT_DIACRITICS = 4
 const UNLOCODE_COLUMN_SUBDIVISION = 5
-const UNLOCODE_COLUMN_COORDINATES = 10
+const UNLOCODE_COLUMN_STATUS = 6
+const UNLOCODE_COLUMN_FUNCTION = 7
 const UNLOCODE_COLUMN_DATE = 8
+const UNLOCODE_COLUMN_IATA = 9
+const UNLOCODE_COLUMN_COORDINATES = 10
+const UNLOCODE_COLUMN_REMARKS = 11
 
 export function readSubdivisionData() {
     const subdivisionCodesRaw = fs.readFileSync("../../data/subdivision-codes.csv", 'utf8').split("\n")
@@ -26,6 +31,7 @@ export async function readCsv() {
     const subdivisionDatabase = readSubdivisionData()
 
     const codeList = fs.readFileSync('../../data/code-list.csv', 'utf8').split("\n")
+    // Ignore the first entry: that's the header
     codeList.shift()
     const csvDatabase = {}
     for (const record of codeList) {
@@ -34,16 +40,21 @@ export async function readCsv() {
             continue
         }
 
+        const change = columns[UNLOCODE_COLUMN_CHANGE]
         const country = columns[UNLOCODE_COLUMN_COUNTRY]
-        const location = columns[UNLOCODE_COLUMN_LOCATION];
+        const location = columns[UNLOCODE_COLUMN_LOCATION]
         const unlocode = `${country}${location}`
         const city = columns[UNLOCODE_COLUMN_CITY]
         const nameWithoutDiacritics = columns[UNLOCODE_COLUMN_NAME_WITHOUT_DIACRITICS]
         const subdivisionCode = columns[UNLOCODE_COLUMN_SUBDIVISION]
         const subdivisionName = subdivisionDatabase[`${country}|${subdivisionCode}`]
-        const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
+        const status = columns[UNLOCODE_COLUMN_STATUS]
+        const function_ = columns[UNLOCODE_COLUMN_FUNCTION]
         const date = columns[UNLOCODE_COLUMN_DATE]
-        csvDatabase[unlocode] = { city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, coordinates, date, unlocode }
+        const iata = columns[UNLOCODE_COLUMN_IATA]
+        const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
+        const remarks = columns[UNLOCODE_COLUMN_REMARKS]
+        csvDatabase[unlocode] = { change, city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, status, "function": function_, coordinates, date, iata, unlocode, remarks }
     }
     return csvDatabase
 }

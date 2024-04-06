@@ -5,6 +5,7 @@ import {
 } from "./coordinatesConverter.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
 import {isSmallVillage, readNominatimDataByCity} from "./nominatim-loader.js";
+import {FALSE_POSITIVES} from "../false-positives.js";
 
 /**
  * Checks if the coordinates don't match the first hit on Nominatim and returns an as helpful error message as possible.
@@ -21,7 +22,7 @@ export async function validateCoordinates(entry, nominatimData) {
     const unlocode = entry.unlocode
     const nominatimResult = nominatimData.result
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
-    if (distance < 100) {
+    if (distance < 100 || FALSE_POSITIVES.includes(unlocode)) {
         // The first result is close enough. Let's validate whether the subdivisionCode exists yet though
         if (entry.subdivisionCode && !entry.subdivisionName) {
             const closeResults = nominatimResult.filter(n => {
@@ -129,7 +130,7 @@ export async function validateCoordinates(entry, nominatimData) {
         // Example: https://unlocode.info/CNBCO
     }
     else if (scrapeType === "byRegion" && allInCorrectRegion) {
-        // All are in the correct region. Let's scrape by city as well to see if there is a location in another region whare the coordinates do match (like ITAN2)
+        // All are in the correct region. Let's scrape by city as well to see if there is a location in another region where the coordinates do match (like ITAN2)
         // This means that either the coordinates are wrong, or the region is wrong.
         // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
 
