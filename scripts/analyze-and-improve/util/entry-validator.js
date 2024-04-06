@@ -137,11 +137,13 @@ export async function validateCoordinates(entry, nominatimData) {
         // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti. Automatically detect this.
 
         await downloadByCityIfNeeded(entry)
-        const nominatimDataByCity = readNominatimDataByCity(unlocode).result
+        // In some super duper rare cases, can we find something by region which and we can't find anything at all when
+        // not searching by region (happens at PKSAW), hence the null check
+        const nominatimDataByCity = readNominatimDataByCity(unlocode)?.result
 
         let closestDistance = Number.MAX_VALUE
         let closestInAnyRegion = undefined
-        nominatimDataByCity.forEach(c => {
+        nominatimDataByCity?.forEach(c => {
             const distance = getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, c.lat, c.lon);
             if (distance < closestDistance) {
                 closestInAnyRegion = c
