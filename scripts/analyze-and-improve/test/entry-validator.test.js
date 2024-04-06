@@ -48,7 +48,7 @@ describe("EntryValidator", () => {
             ]
         }
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
-        expect(validateMessage).equals("https://unlocode.info/CNBAZ: (Bazhou): Invalid subdivision code 13! Please change the region to HE. It could also be that Bazhou District in SC or Bazhou in GZ or SX or Bazhou;Pa-chou in GZ or Bazhou in NM or GD or QH is meant.")
+        expect(validateMessage).equals("https://unlocode.info/CNBAZ: (Bazhou): Invalid subdivision code 13! Please change the region to HE. It could also be that Bazhou District in SC (<a href=\"https://www.openstreetmap.org/node/244076793\">3151N 10646E</a>) or Bazhou City in HE (<a href=\"https://www.openstreetmap.org/relation/2989320\">3905N 11636E</a>) or Bazhou in GZ (<a href=\"https://www.openstreetmap.org/node/4916661884\">2620N 10908E</a>) or SX (<a href=\"https://www.openstreetmap.org/node/5244395386\">3736N 11340E</a>) or Bazhou;Pa-chou in GZ (<a href=\"https://www.openstreetmap.org/node/4916658172\">2654N 10909E</a>) or Bazhou in NM (<a href=\"https://www.openstreetmap.org/node/8481597960\">4107N 11259E</a>) or GD (<a href=\"https://www.openstreetmap.org/node/8093022421\">2221N 11247E</a>) or QH (<a href=\"https://www.openstreetmap.org/node/3755502219\">3613N 10246E</a>) is meant.")
     })
     it ("the wrong region is set (a close location is found in another region) - existing wrong location", async () => {
         const csvEntry = {
@@ -71,7 +71,7 @@ describe("EntryValidator", () => {
             ]
         }
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
-        const expected = "https://unlocode.info/ITCFL: (Filo): No Filo found in CR! Molino di Filo (RA) does exist at the provided coordinates, so the region should probably be changed to RA. It could also be that Via del Filo in AR or Molino Filo in MB is meant."
+        const expected = "https://unlocode.info/ITCFL: (Filo): No Filo found in CR! Molino di Filo (RA) does exist at the provided coordinates, so the region should probably be changed to RA. It could also be that Via del Filo in AR (<a href=\"https://www.openstreetmap.org/node/1434672351\">4317N 01150E</a>) or Molino Filo in MB (<a href=\"https://www.openstreetmap.org/node/4946937027\">4542N 00914E</a>) is meant."
         expect(validateMessage).equals(expected)
     })
     it ("nothing is logged when there's a good result at the coordinates, just not the first result", async () => {
@@ -120,7 +120,7 @@ describe("EntryValidator", () => {
         }
 
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
-        const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at 2255N 11337E (122 km away; source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
+        const expected = "https://unlocode.info/CNSTI: (Shatian): The coordinates do point to Shatian, but it's a small town and you have the bigger town Shatian Town at <a href=\"https://www.openstreetmap.org/relation/5664242\">2255N 11337E</a> (122 km away; source: https://www.openstreetmap.org/relation/5664242). Please doublecheck if this is pointing to the correct location."
         expect(validateMessage).equals(expected)
     })
     it ("the entry doesn't have a region in Nominatim - 1", async () => {
