@@ -30,6 +30,7 @@ export async function validateCoordinates(entry, nominatimData) {
             })
             return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
         }
+        return undefined
     }
     const scrapeType = nominatimData.scrapeType
     let nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`

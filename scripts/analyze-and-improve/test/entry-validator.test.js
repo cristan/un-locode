@@ -169,4 +169,28 @@ describe("EntryValidator", () => {
         const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
         expect(validateMessage).undefined
     })
+    it ("don't return anything when the items are close enough", async () => {
+        // The coordinates of EGDAK point to Dakhla Airport while Nominatim points to El Dakhla Oases (29 km away)
+        // Let's not bother with that.
+
+        const csvEntry = {
+            "city": "Dakhla",
+            "country": "EG",
+            "nameWithoutDiacritics": "Dakhla",
+            "location": "DAK",
+            "subdivisionCode": "",
+            "coordinates": "2524N 02900E",
+            "unlocode": "EGDAK",
+        }
+
+        const nominatimResult = {
+            "scrapeType":"byCity",
+            "result":[
+                {"place_id":76456085,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"node","osm_id":2662989689,"lat":"25.5120622","lon":"29.2581601","category":"place","type":"city","place_rank":16,"importance":0.3936386969548191,"addresstype":"city","name":"El Dakhla Oases","display_name":"El Dakhla Oases, New Valley, Egypt","address":{"city":"El Dakhla Oases","state":"New Valley","ISO3166-2-lvl4":"EG-WAD","country":"Egypt","country_code":"eg"},"boundingbox":["25.3520622","25.6720622","29.0981601","29.4181601"],"subdivisionCode":"WAD","sourceUrl":"https://www.openstreetmap.org/node/2662989689#map=12/25.5120622/29.2581601"}
+            ]
+        }
+
+        const validateMessage = await validateCoordinates(csvEntry, nominatimResult)
+        expect(validateMessage).undefined
+    })
 })
