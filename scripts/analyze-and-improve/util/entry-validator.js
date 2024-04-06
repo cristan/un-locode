@@ -12,6 +12,7 @@ import {FALSE_POSITIVES} from "../false-positives.js";
  * Note that this doesn't have to be coordinates related: it could also be caused by an incorrect region.
  */
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
+// TODO: https://unlocode.info/CVBVC points to the one in the wrong country :O
 export async function validateCoordinates(entry, nominatimData) {
     const decimalCoordinates = convertToDecimal(entry.coordinates)
     if (!decimalCoordinates) {
