@@ -19,9 +19,15 @@ async function validateAllCoordinates() {
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
         if (!decimalCoordinates) {
-            // TODO: fall back to Nominatim
-            entries.push("N/A", "N/A")
-            writeCsv(dataOut, entries)
+            const nominatimData = await getNominatimData(entry)
+            if (!nominatimData || nominatimData.scrapeType === "byCity" || !entry.subdivisionName) {
+                entries.push("N/A", "N/A")
+                writeCsv(dataOut, entries)
+            } else {
+                // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or no valid region was specified
+                entries.push("N/A (no UN/LOCODE)", "N/A")
+                writeNominatimDataToCsv(dataOut, entry, nominatimData.result[0], "N/A (no Nominatim)")
+            }
             continue
         }
 
@@ -75,9 +81,13 @@ async function validateAllCoordinates() {
             }
         }
         // If we're still here and still don't have a close result, choose Nominatim
-        const nominatimEntries =[entry.change,entry.country,entry.location,entry.city,entry.nameWithoutDiacritics,entry.subdivisionCode,entry.status,entry.function,entry.date,entry.iata,convertToUnlocode(firstNominatimResult.lat, firstNominatimResult.lon),entry.remarks,distance,firstNominatimResult.sourceUrl]
-        writeCsv(dataOut, nominatimEntries)
+        writeNominatimDataToCsv(dataOut, entry, firstNominatimResult, distance)
     }
+}
+
+function writeNominatimDataToCsv(dataOut, entry, firstNominatimResult, distance) {
+    const nominatimEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(firstNominatimResult.lat, firstNominatimResult.lon), entry.remarks, distance, firstNominatimResult.sourceUrl]
+    writeCsv(dataOut, nominatimEntries)
 }
 
 function writeCsv(dataOut, entries) {
