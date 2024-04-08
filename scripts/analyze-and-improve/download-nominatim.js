@@ -8,12 +8,12 @@ async function start() {
     for (const unlocode of Object.keys(csvDatabase)) {
         const entry = csvDatabase[unlocode]
 
-        const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates) {// || entry.country !== "CN"
-            // No need to download the entries who don't have coordinates in unlocode for now:
-            // let's first focus on correcting the coordinates who are in there.
-            continue
-        }
+        // const decimalCoordinates = convertToDecimal(entry.coordinates)
+        // if (!decimalCoordinates) {// || entry.country !== "CN"
+        //     // No need to download the entries who don't have coordinates in unlocode for now:
+        //     // let's first focus on correcting the coordinates who are in there.
+        //     continue
+        // }
 
         console.log(`Downloading ${unlocode}`)
         await getNominatimData(entry)
