@@ -9,9 +9,12 @@ import {FALSE_POSITIVES} from "./false-positives.js";
 async function validateAllCoordinates() {
     const csvDatabase = await readCsv()
 
-    const dataOut = fs.createWriteStream('../../data/code-list-improved.csv')
+    const filename = 'code-list-improved.csv'
+    const dataOut = fs.createWriteStream('../../data/' + filename)
     writeCsv(dataOut, ["Change", "Country", "Location", "Name","NameWoDiacritics","Subdivision","Status","Function","Date","IATA","Coordinates","Remarks","Source","Distance"])
 
+    let correctedCoordinates = 0
+    let newlyAddedCoordinates = 0
     for (const unlocode of Object.keys(csvDatabase)) {
         const entry = csvDatabase[unlocode]
 
@@ -25,6 +28,7 @@ async function validateAllCoordinates() {
                 writeCsv(dataOut, entries)
             } else {
                 // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or no valid region was specified
+                newlyAddedCoordinates++
                 writeNominatimDataToCsv(dataOut, entry, nominatimData.result[0], "N/A (no UN/LOCODE)")
             }
             continue
@@ -80,8 +84,10 @@ async function validateAllCoordinates() {
             }
         }
         // If we're still here and still don't have a close result, choose Nominatim
+        correctedCoordinates++
         writeNominatimDataToCsv(dataOut, entry, firstNominatimResult, distance)
     }
+    console.log(`Created ${filename} with ${correctedCoordinates} corrected coordinates and ${newlyAddedCoordinates} new ones`)
 }
 
 function writeNominatimDataToCsv(dataOut, entry, firstNominatimResult, distance) {
