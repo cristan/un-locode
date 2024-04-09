@@ -29,7 +29,7 @@ export async function getNominatimData(entry) {
 
 async function loadNominatimData(entry) {
     const city = entry.city
-    if (city.includes(" Apt" || city.includes("/") || city.includes(","))) {
+    if (city.includes(" Apt") || city.includes("/") || city.includes(",")) {
         const query = city.replace(" Apt", " Airport")
         // Entries with a comma are pretty much never the actual city name, like ATMLD: Mollersdorf, Baden
         // Entries with a / definitely aren't the actual city name, like ATBES: Bergheim/Salzburg
