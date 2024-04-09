@@ -15,20 +15,23 @@ import {FALSE_POSITIVES} from "../false-positives.js";
 // TODO: https://unlocode.info/CVBVC points to the one in the wrong country (or MDCAL, MYGTB) :O
 export async function validateCoordinates(entry, nominatimData) {
     const decimalCoordinates = convertToDecimal(entry.coordinates)
+    const unlocode = entry.unlocode
+    const nominatimResult = nominatimData.result
+    const closeResults = nominatimResult.filter(n => {
+        return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+    })
     if (!decimalCoordinates) {
         // Ignore entries without coordinates for now.
         // Invalid coordinates are already handled by the validate-coordinates.js.
-        return
+        // We do want to check for invalid subdivision codes though
+        if (entry.subdivisionCode && !entry.subdivisionName) {
+            return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
+        }
     }
-    const unlocode = entry.unlocode
-    const nominatimResult = nominatimData.result
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
     if (distance < 100 || FALSE_POSITIVES.includes(unlocode)) {
         // The first result is close enough. Let's validate whether the subdivisionCode exists yet though
         if (entry.subdivisionCode && !entry.subdivisionName) {
-            const closeResults = nominatimResult.filter(n => {
-                return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
-            })
             return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
         }
         return undefined
@@ -229,7 +232,11 @@ function getAlternativeNames(alternatives) {
 
 function getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults) {
     let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
-    message += `Invalid subdivision code ${entry.subdivisionCode}! `
+    message += `The subdivision code (${entry.subdivisionCode}) doesn't match any region! `
+    if (closeResults.length === 0) {
+        return message
+        // TODO: also check for non-close results
+    }
     const closeResult = closeResults[0]
     message += `Please change the region to ${closeResult.subdivisionCode}.`
     const otherAlternatives = nominatimResult
