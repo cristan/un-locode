@@ -1,7 +1,6 @@
 import {readCsv} from "./util/readCsv.js";
 import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./util/coordinatesConverter.js";
 import {getNominatimData, readNominatimDataByCity} from "./util/nominatim-loader.js";
-import {validateCoordinates} from "./util/entry-validator.js";
 import fs from "fs";
 import {downloadByCityIfNeeded} from "./util/nominatim-downloader.js";
 import {FALSE_POSITIVES} from "./false-positives.js";
