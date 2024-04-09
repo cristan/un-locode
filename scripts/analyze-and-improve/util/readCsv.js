@@ -27,10 +27,10 @@ export function readSubdivisionData() {
     return subdivisionDatabase
 }
 
-export async function readCsv() {
+export async function readCsv(improved = false) {
     const subdivisionDatabase = readSubdivisionData()
 
-    const codeList = fs.readFileSync('../../data/code-list.csv', 'utf8').split("\n")
+    const codeList = fs.readFileSync(`../../data/code-list${improved ? '-improved' : ''}.csv`, 'utf8').split("\n")
     // Ignore the first entry: that's the header
     codeList.shift()
     const csvDatabase = {}
