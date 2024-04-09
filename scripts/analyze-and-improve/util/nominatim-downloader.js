@@ -17,7 +17,7 @@ export async function downloadByRegionIfNeeded(entry) {
         return
     }
 
-    const nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}&state=${entry.country}-${region}`
+    const nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(getCityName(entry))}&country=${encodeURI(entry.country)}&state=${entry.country}-${region}`
     await delay(1000)
     const fromNominatim = await (await fetch(nominatimQuery)).text()
     await fs.writeFileSync(fileName, fromNominatim)
@@ -33,12 +33,17 @@ export async function downloadByCityIfNeeded(entry) {
     }
 
     await delay(1000)
-    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(entry.city)}&country=${encodeURI(entry.country)}`
+    const ogNominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=${encodeURI(getCityName(entry))}&country=${encodeURI(entry.country)}`
     const fromNominatim2 = await (await fetch(ogNominatimQuery)).text()
     if (!fs.existsSync(directory)) {
         fs.mkdirSync(directory, { recursive: true });
     }
     await fs.writeFileSync(fileName, fromNominatim2)
+}
+
+export function getCityName(entry) {
+    const cityName = entry.city;
+    return cityName.replace(/\s\(.*\)/, "");
 }
 
 function delay(ms) {
