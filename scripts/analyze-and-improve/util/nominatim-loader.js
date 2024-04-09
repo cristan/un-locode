@@ -1,5 +1,5 @@
 import fs from "node:fs"
-import {downloadByCityIfNeeded, downloadByRegionIfNeeded} from "./nominatim-downloader.js";
+import {downloadByCityIfNeeded, downloadByQueryIfNeeded, downloadByRegionIfNeeded} from "./nominatim-downloader.js";
 import {getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 
 /**
@@ -28,6 +28,18 @@ export async function getNominatimData(entry) {
 }
 
 async function loadNominatimData(entry) {
+    const city = entry.city
+    if (city.includes(" Apt" || city.includes("/") || city.includes(","))) {
+        const query = city.replace(" Apt", " Airport")
+        // Entries with a comma are pretty much never the actual city name, like ATMLD: Mollersdorf, Baden
+        // Entries with a / definitely aren't the actual city name, like ATBES: Bergheim/Salzburg
+        // Airports aren't cities, so we won't find those via city
+
+        // this is why in all cases, we can just return the one via a query
+        await downloadByQueryIfNeeded(entry, query)
+        return readNominatimDataByQuery(entry.unlocode)
+    }
+
     const subdivisionCode = entry.subdivisionCode
     if (subdivisionCode) {
         await downloadByRegionIfNeeded(entry)
@@ -71,7 +83,6 @@ export function readNominatimDataByCity(unlocode) {
     if (byCity === "[]") {
         return undefined
     } else {
-
         const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byCity))
         if (withoutUselessEntries.length === 0) {
             return undefined
@@ -80,6 +91,26 @@ export function readNominatimDataByCity(unlocode) {
         addConvenienceAttributes(withoutUselessEntries)
 
         return {scrapeType: "byCity", result: withoutUselessEntries}
+    }
+}
+
+export function readNominatimDataByQuery(unlocode) {
+    const country = unlocode.substring(0, 2)
+    const location = unlocode.substring(2)
+    const directoryRoot = `../../data/nominatim/${country}/${location}`
+    const byQueryFileName = `${directoryRoot}/byQuery/${unlocode}.json`
+    const byQuery = fs.readFileSync(byQueryFileName, 'utf8')
+    if (byQuery === "[]") {
+        return undefined
+    } else {
+        const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byQuery))
+        if (withoutUselessEntries.length === 0) {
+            return undefined
+        }
+
+        addConvenienceAttributes(withoutUselessEntries)
+
+        return {scrapeType: "byQuery", result: withoutUselessEntries}
     }
 }
 

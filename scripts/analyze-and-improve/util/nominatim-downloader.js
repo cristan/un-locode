@@ -1,5 +1,23 @@
 import fs from "node:fs"
 
+export async function downloadByQueryIfNeeded(entry, query) {
+    const directory = `../../data/nominatim/${entry.country}/${entry.location}/byQuery`
+    if (!fs.existsSync(directory)){
+        fs.mkdirSync(directory, { recursive: true });
+    }
+    const fileName = `${directory}/${entry.unlocode}.json`
+    const fileAlreadyExists = fs.existsSync(fileName)
+    if (fileAlreadyExists) {
+        // console.log(`${fileName} already exists. Skipping.`)
+        return
+    }
+
+    const nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&q=${encodeURI(query)}`
+    await delay(1000)
+    const fromNominatim = await (await fetch(nominatimQuery)).text()
+    await fs.writeFileSync(fileName, fromNominatim)
+}
+
 export async function downloadByRegionIfNeeded(entry) {
     const region = entry.subdivisionCode
     if (!region) {
