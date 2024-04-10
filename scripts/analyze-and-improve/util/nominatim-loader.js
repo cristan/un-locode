@@ -104,13 +104,15 @@ export function readNominatimDataByQuery(unlocode) {
         return undefined
     } else {
         const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byQuery))
-        if (withoutUselessEntries.length === 0) {
+        // Let's filter out entries from other countries just in case: who knows what kind of results searching by query returns
+        const inCorrectCountry = withoutUselessEntries.filter(nm => nm.address.country_code.toUpperCase() === country)
+        if (inCorrectCountry.length === 0) {
             return undefined
         }
 
-        addConvenienceAttributes(withoutUselessEntries)
+        addConvenienceAttributes(inCorrectCountry)
 
-        return {scrapeType: "byQuery", result: withoutUselessEntries}
+        return {scrapeType: "byQuery", result: inCorrectCountry}
     }
 }
 

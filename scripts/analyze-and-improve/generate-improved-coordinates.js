@@ -26,7 +26,7 @@ async function validateAllCoordinates() {
                 entries.push("N/A", "N/A")
                 writeCsv(dataOut, entries)
             } else {
-                // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or no valid region was specified
+                // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or by query or no valid region was specified
                 newlyAddedCoordinates++
                 writeNominatimDataToCsv(dataOut, entry, nominatimData.result[0], "N/A (no UN/LOCODE)")
             }
