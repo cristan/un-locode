@@ -37,8 +37,8 @@ export async function downloadFromWikidata() {
             return {
                 item: result.item.value,
                 itemLabel: result.itemLabel.value,
-                lat: match[1],
-                lon: match[2],
+                lat: match[2],
+                lon: match[1],
                 unlocode: result.unlocode.value
             }
     })
