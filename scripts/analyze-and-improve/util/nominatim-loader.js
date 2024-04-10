@@ -168,9 +168,8 @@ function getSubdivisionCode(nominatimElement) {
     // In case of https://unlocode.info/AZNAJ (the only level 3 in AZ, the rest are all level 5), we need level 3 instead of level 5
     const countryCode = nominatimElement.address.country_code;
     if (countryCode === "cz") {
-        // CZYHO: level 6 should be picked over 7. However, 1 only has 20A as level 7, and we can substring that to 20, which is Středočeský kraj,
-        // which translates to Central Bohemian Region which is the correct region
-        return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl7"]?.substring(3, 5)
+        // We need level 6, but level 7 is basically the first 2 characters of level 6. Example: CZK9J which has CZ-64 as level 6, but CZ-645 as level 7
+        return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl7"]?.substring(3)
     } else if (countryCode === "bd") {
         // All BD: pick 5 (some like BDKUS only have level 4, but that's wrong, so just never pick 4)
         return nominatimElement.address["ISO3166-2-lvl5"]?.substring(3)
