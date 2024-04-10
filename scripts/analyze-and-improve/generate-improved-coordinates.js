@@ -22,11 +22,12 @@ async function validateAllCoordinates() {
         const decimalCoordinates = convertToDecimal(entry.coordinates)
         if (!decimalCoordinates) {
             const nominatimData = await getNominatimData(entry)
-            if (!nominatimData || (nominatimData.scrapeType === "byCity" && !!entry.subdivisionName)) {
+            if (!nominatimData || (nominatimData.scrapeType === "byCity" && entry.subdivisionName && nominatimData.result[0].subdivisionCode)) {
                 entries.push("N/A", "N/A")
                 writeCsv(dataOut, entries)
             } else {
                 // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or by query or no valid region was specified
+                // The exception is when nominatim doesn't return a subdivision code, in that case it's expected that we couldn't find it by region
                 newlyAddedCoordinates++
                 writeNominatimDataToCsv(dataOut, entry, nominatimData.result[0], "N/A (no UN/LOCODE)")
             }
