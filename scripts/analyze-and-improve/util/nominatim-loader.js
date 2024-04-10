@@ -173,7 +173,7 @@ function getSubdivisionCode(nominatimElement) {
         return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3) ?? nominatimElement.address["ISO3166-2-lvl7"]?.substring(3, 5)
     } else if (countryCode === "bd") {
         // All BD: pick 5 (some like BDKUS only have level 4, but that's wrong, so just never pick 4)
-        return nominatimElement.address["ISO3166-2-lvl6"]?.substring(4)
+        return nominatimElement.address["ISO3166-2-lvl5"]?.substring(3)
     } else if (countryCode === "gb") {
         // Level 4 is something like England or Scotland. That's not the level unlocodes work on, level 6 is what we really need.
         return nominatimElement.address["ISO3166-2-lvl6"]?.substring(3)
