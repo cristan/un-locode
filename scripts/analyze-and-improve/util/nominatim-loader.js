@@ -1,5 +1,10 @@
 import fs from "node:fs"
-import {downloadByCityIfNeeded, downloadByQueryIfNeeded, downloadByRegionIfNeeded} from "./nominatim-downloader.js";
+import {
+    downloadByCityIfNeeded,
+    downloadByQueryIfNeeded,
+    downloadByRegionIfNeeded,
+    getDownloadCityName
+} from "./nominatim-downloader.js";
 import {getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 
 /**
@@ -28,9 +33,9 @@ export async function getNominatimData(entry) {
 }
 
 async function loadNominatimData(entry) {
-    const city = entry.city
-    if (city.includes(" Apt") || city.includes("/") || city.includes(",")) {
-        const query = city.replace(" Apt", " Airport")
+    const downloadCityName = getDownloadCityName(entry)
+    if (downloadCityName.includes("Airport") || downloadCityName.includes(",")) {
+        const query = downloadCityName +", "+ entry.country
         // Entries with a comma are pretty much never the actual city name, like ATMLD: Mollersdorf, Baden
         // Entries with a / definitely aren't the actual city name, like ATBES: Bergheim/Salzburg
         // Airports aren't cities, so we won't find those via city
