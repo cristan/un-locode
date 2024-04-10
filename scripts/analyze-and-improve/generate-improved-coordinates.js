@@ -1,12 +1,14 @@
 import {readCsv} from "./util/readCsv.js";
 import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./util/coordinatesConverter.js";
 import {getNominatimData, readNominatimDataByCity} from "./util/nominatim-loader.js";
-import fs from "fs";
+import fs from "node:fs";
 import {downloadByCityIfNeeded} from "./util/nominatim-downloader.js";
 import {FALSE_POSITIVES} from "./false-positives.js";
+import {readWikidata} from "./util/wikidata-reader.js";
 
 async function validateAllCoordinates() {
     const csvDatabase = await readCsv()
+    const wikidataDatabase = readWikidata()
 
     const filename = 'code-list-improved.csv'
     const dataOut = fs.createWriteStream('../../data/' + filename)
@@ -23,8 +25,16 @@ async function validateAllCoordinates() {
         if (!decimalCoordinates) {
             const nominatimData = await getNominatimData(entry)
             if (!nominatimData || (nominatimData.scrapeType === "byCity" && entry.subdivisionName && nominatimData.result[0].subdivisionCode)) {
-                entries.push("N/A", "N/A")
-                writeCsv(dataOut, entries)
+                // Nothing by nominatim or UN/LOCODE, so let's try Wikidata
+                // TODO: validate unlocode data by Wikidata as well
+                const wikiDataEntry = wikidataDatabase[unlocode]
+                if (!wikiDataEntry) {
+                    entries.push("N/A", "N/A")
+                    writeCsv(dataOut, entries)
+                } else {
+                    const nominatimEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (no UN/LOCODE)", wikiDataEntry.item]
+                    writeCsv(dataOut, nominatimEntries)
+                }
             } else {
                 // Nothing at unlocode, so no coordinates to validate against. Therefore, only use the data when we could find it by region or by query or no valid region was specified
                 // The exception is when nominatim doesn't return a subdivision code, in that case it's expected that we couldn't find it by region

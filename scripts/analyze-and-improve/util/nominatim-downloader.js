@@ -12,9 +12,9 @@ export async function downloadByQueryIfNeeded(entry, query) {
         return
     }
 
-    const nominatimQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&q=${encodeURI(query)}`
+    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&q=${encodeURI(query)}`
     await delay(1000)
-    const fromNominatim = await (await fetch(nominatimQuery)).text()
+    const fromNominatim = await (await fetch(nominatimUrl)).text()
     await fs.writeFileSync(fileName, fromNominatim)
 }
 

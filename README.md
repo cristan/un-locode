@@ -41,5 +41,8 @@ All unlocode data is licensed under the [ODC Public Domain Dedication and Licenc
 ### Nominatim data
 ODbL 1.0. http://osm.org/copyright
 
+### Wikidata
+CC-0 (No rights reserved)
+
 ### All other contents in this repo
 Public domain
