@@ -12,7 +12,7 @@ async function validateAllCoordinates() {
 
     const filename = 'code-list-improved.csv'
     const dataOut = fs.createWriteStream('../../data/' + filename)
-    writeCsv(dataOut, ["Change", "Country", "Location", "Name","NameWoDiacritics","Subdivision","Status","Function","Date","IATA","Coordinates","Remarks","Source","Distance"])
+    writeCsv(dataOut, ["Change", "Country", "Location", "Name","NameWoDiacritics","Subdivision","Status","Function","Date","IATA","Coordinates","Remarks","Distance","Source"])
 
     let correctedCoordinates = 0
     let newlyAddedCoordinates = 0
@@ -60,7 +60,7 @@ async function validateAllCoordinates() {
         const firstNominatimResult = nominatimResult[0]
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, firstNominatimResult.lat, firstNominatimResult.lon));
         if (distance < 100 || FALSE_POSITIVES.includes(unlocode)) {
-            entries.push("UN/LOCODE", distance)
+            entries.push(distance, "UN/LOCODE")
             writeCsv(dataOut, entries)
             continue
         }
@@ -71,7 +71,7 @@ async function validateAllCoordinates() {
         if (closeResults.length !== 0) {
             // The first hit isn't close, but there is another one who is. Keep UN/LOCODE
             const distanceCloseResult = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0].lon));
-            entries.push("UN/LOCODE", distanceCloseResult)
+            entries.push(distanceCloseResult, "UN/LOCODE")
             writeCsv(dataOut, entries)
             continue
         }
@@ -89,7 +89,7 @@ async function validateAllCoordinates() {
                 return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
             })
             if (closeResults !== undefined && closeResults.length !== 0) {
-                entries.push("UN/LOCODE",getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0 ].lon))
+                entries.push(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0].lon), "UN/LOCODE")
                 continue
             }
         }
