@@ -54,12 +54,22 @@ export async function readCsv(improved = false) {
         const iata = columns[UNLOCODE_COLUMN_IATA]
         const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
         const remarks = columns[UNLOCODE_COLUMN_REMARKS]
-        csvDatabase[unlocode] = { change, city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, status, "function": function_, coordinates, date, iata, unlocode, remarks }
+
+        const unlocodeEntry = { change, city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, status, "function": function_, coordinates, date, iata, unlocode, remarks };
+        if (improved) {
+            const source = columns[13]
+            csvDatabase[unlocode] = {
+                source,
+                ...unlocodeEntry
+            }
+        } else {
+            csvDatabase[unlocode] = unlocodeEntry
+        }
     }
     return csvDatabase
 }
 
-function parseCSV(csvString) {
+export function parseCSV(csvString) {
     const result = []
     let currentField = ''
     let insideQuotes = false

@@ -158,7 +158,7 @@ function addConvenienceAttributes(nominatimResult) {
     return nominatimResult
 }
 
-function getSubdivisionCode(nominatimElement) {
+export function getSubdivisionCode(nominatimElement) {
     // In case of https://unlocode.info/CNHGQ, 4 over 3
     // BFBOY, BFBOG, BFBRO (all BF): 5 over 4
     // IT2AB, IT2C8, IT3YZ: 6 over 4
