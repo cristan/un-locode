@@ -78,10 +78,8 @@ async function validateAllCoordinates() {
 
         const scrapeType = nominatimData.scrapeType
         if (scrapeType === "byRegion") {
-            // We couldn't find any matching result by region. Let's scrape by city as well to see if there is a location in another region where the coordinates do match (like ITAN2)
+            // We couldn't find any close result by region. Let's scrape by city as well to see if there is a location in another region where the coordinates do match (like ITAN2)
             // This means that either the coordinates are wrong, or the region is wrong.
-            // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti.
-            // Still, in most cases it's just that the wrong region is set in UN/LOCODE: choose that
 
             await downloadByCityIfNeeded(entry)
             const nominatimDataByCity = readNominatimDataByCity(unlocode)?.result
@@ -89,7 +87,14 @@ async function validateAllCoordinates() {
                 return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
             })
             if (closeResults !== undefined && closeResults.length !== 0) {
+                // We found a close result when not searching by region. Assume the coordinates are correct
+                // (which would mean the region is either wrong in unlocode, or not set in OpenStreetMap)
+
+                // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti.
+                // Still, in most cases it's just that the wrong region is set in UN/LOCODE: choose that
+
                 entries.push(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0].lon), "UN/LOCODE")
+                writeCsv(dataOut, entries)
                 continue
             }
         }
