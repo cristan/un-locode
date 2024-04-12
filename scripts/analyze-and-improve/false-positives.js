@@ -295,4 +295,6 @@ export const FALSE_POSITIVES =[
     "ZAMDL",
     "ZAOLI",
     "ZAZEK",
+    "INDMA",
+    "AOCUI", // Apparently, the coordinates point to the correct Port of Cuio
 ]
