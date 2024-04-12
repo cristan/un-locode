@@ -41,7 +41,10 @@ export async function downloadFromWikidata() {
                 lon: match[1],
                 unlocode: result.unlocode.value
             }
-    })
+        })
+        .sort(function(a, b) {
+            return (a.unlocode + a.item > b.unlocode + a.item) ? 1 : -1
+        })
     await fs.writeFileSync("../../data/wikidata/wikidata.json", JSON.stringify(simplifiedData, null, 2))
 }
 
