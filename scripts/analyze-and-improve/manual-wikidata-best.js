@@ -41,4 +41,16 @@ export const WIKIDATA_BEST = [
     "PHMAB",
     "PGMAS",
     "PEMRI",
+    "JPSKM",
+    "CAPTN",
+    "GRADI",
+    "PHWNP",
+    "ASPPG",// Because of typo in the original. Hopefully will be fixed the next release
+    "IDPNJ",// Port
+    "CAPTN",
+    "VEMIV",
+    "ESSCI",
+    "GTSNJ",
+    "IDTBA",
+    "VNVPH",
 ]

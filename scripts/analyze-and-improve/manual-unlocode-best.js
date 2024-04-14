@@ -304,5 +304,13 @@ export const UNLOCODE_BEST =[
     "THERA",
     "MXPIC",
     "INSIK", // Probably a typo: Sika vs Sikka
-    "CNJLY"
+    "CNJLY",
+    "CNXIJ", // A little weird, since it's in the middle of the ocean, but it matches https://shipnext.com/port/xijiang-marine-terminal-cnxij-chn and atobviac, so I guess it's fine?
+    "CNTZO",
+    "USSUT",//atobviac
+    "VNRUB",// oil platform at sea
+    "VNRDG",// oil platform at sea
+    "CAPTN",
+    "MYWSP",// Caused by the hard name Westport/Port Klang
+    "PHMAB",
 ]
