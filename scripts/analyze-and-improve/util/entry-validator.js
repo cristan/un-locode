@@ -5,7 +5,7 @@ import {
 } from "./coordinatesConverter.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
 import {isSmallVillage, readNominatimDataByCity} from "./nominatim-loader.js";
-import {FALSE_POSITIVES} from "../false-positives.js";
+import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
 
 /**
  * Checks if the coordinates don't match the first hit on Nominatim and returns an as helpful error message as possible.
@@ -29,7 +29,7 @@ export async function validateCoordinates(entry, nominatimData) {
         }
     }
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
-    if (distance < 100 || FALSE_POSITIVES.includes(unlocode)) {
+    if (distance < 100 || UNLOCODE_BEST.includes(unlocode)) {
         // The first result is close enough. Let's validate whether the subdivisionCode exists yet though
         if (entry.subdivisionCode && !entry.subdivisionName) {
             return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)

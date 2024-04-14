@@ -1,7 +1,7 @@
 // There are cases where the UN/LOCODE coordinates are actually good, but Nominatim doesn't find the correct place
 // Not all differences are manually checked, so there are bound to be more
 
-export const FALSE_POSITIVES =[
+export const UNLOCODE_BEST =[
     "ARCEN",
     "ARFRT",
     "AREJO",
@@ -297,4 +297,12 @@ export const FALSE_POSITIVES =[
     "ZAZEK",
     "INDMA",
     "AOCUI", // Apparently, the coordinates point to the correct Port of Cuio
+    "MYANG", // I'm not actually sure, but I don't see any evidence where else it could be
+    "NGANA", // It's an oil terminal: it should be in the middle of the ocean
+    "MYBGR", // Same here
+    "MXCNT",
+    "THERA",
+    "MXPIC",
+    "INSIK", // Probably a typo: Sika vs Sikka
+    "CNJLY"
 ]
