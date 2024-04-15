@@ -53,4 +53,5 @@ export const WIKIDATA_BEST = [
     "GTSNJ",
     "IDTBA",
     "VNVPH",
+    "PESNX",// There are 2 times San Nicolas in Peru. This is the one aToBviaC uses though
 ]
