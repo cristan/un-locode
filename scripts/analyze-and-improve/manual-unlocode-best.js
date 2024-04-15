@@ -313,4 +313,12 @@ export const UNLOCODE_BEST =[
     "CAPTN",
     "MYWSP",// Caused by the hard name Westport/Port Klang
     "PHMAB",
+    "CLLAJ",
+    "DEFUB",// There's actually a space in the city name!
+    "ECVEI", // It's a little weird that Velasco Ibarra and El Empalme are the same city, but they are
+    "ESCZA",
+    "GBABN",// Typo in region: NTH vs NHT
+    "GBMKO",// Tiny, but it matches
+    "GBNGO",// Two Newingtons in Kent, but the other is next to a rail, so I'd guess it would have gotten Rail as a function if that were the one
+    "INISP",
 ]
