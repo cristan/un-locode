@@ -1,7 +1,4 @@
-import {readCsv} from "./util/readCsv.js";
-import {convertToDecimal} from "./util/coordinatesConverter.js";
-import {getNominatimData} from "./util/nominatim-loader.js";
-import fs from "node:fs";
+import fs from "node:fs"
 
 const sparqlQuery = `
     SELECT ?item ?itemLabel ?coords ?unlocode
@@ -10,42 +7,70 @@ const sparqlQuery = `
         ?item wdt:P625 ?coords.
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
     }
+    ORDER BY ?item
+    LIMIT 5000
+    OFFSET $offset
 `
-const endpointUrl = `https://query.wikidata.org/sparql?query=${encodeURIComponent(sparqlQuery)}&format=json&flavor=dump`
 
-export async function downloadFromWikidata() {
-    const fromWikidata = await fetch(endpointUrl, {
-        headers: {
-            'User-Agent': 'Bot for github.com/cristan/improved-un-locodes'
-        }
-    })
+const endpointUrl = `https://query.wikidata.org/sparql?format=json&flavor=dump`
+const coordsRegex = /Point\(([-\d\.]*)\s([-\d\.]*)\)/
 
-    const response = await fromWikidata.json()
-    const coordsRegex = /Point\(([-\d\.]*)\s([-\d\.]*)\)/
+async function downloadFromWikidata() {
+    let offset = 0
+    let allData = []
 
-    const simplifiedData = response.results.bindings
-        .filter(result => {
-            const match = coordsRegex.exec(result.coords.value)
-            if (!match || match.length < 3) {
-                console.warn(JSON.stringify(result))
-                return false
+    while (true) {
+        const queryUrl = `${endpointUrl}&query=${encodeURIComponent(sparqlQuery.replace('$offset', offset))}`
+
+        const fromWikidata = await fetch(queryUrl, {
+            headers: {
+                'User-Agent': 'Bot for github.com/cristan/improved-un-locodes'
             }
-            return true
         })
-        .map(result => {
-            const match = coordsRegex.exec(result.coords.value)
-            return {
+
+        const response = await fromWikidata.json()
+
+        if (response.results.bindings.length === 0) {
+            // No more data to fetch, break the loop
+            break
+        }
+
+        const simplifiedData = response.results.bindings
+            .filter(result => {
+                const match = coordsRegex.exec(result.coords.value)
+                if (!match || match.length < 3) {
+                    console.warn(JSON.stringify(result))
+                    return false
+                }
+                return true
+            })
+            .map(result => ({
                 item: result.item.value,
                 itemLabel: result.itemLabel.value,
-                lat: match[2],
-                lon: match[1],
+                lat: extractCoordinates(result.coords.value).lat,
+                lon: extractCoordinates(result.coords.value).lon,
                 unlocode: result.unlocode.value
-            }
-        })
-        .sort(function(a, b) {
-            return (a.unlocode + a.item > b.unlocode + a.item) ? 1 : -1
-        })
-    await fs.writeFileSync("../../data/wikidata/wikidata.json", JSON.stringify(simplifiedData, null, 2))
+            }))
+
+        allData = allData.concat(simplifiedData)
+        offset += 5000 // Increase the offset for the next iteration
+    }
+
+    // Sort the data, so they will have a consistent order
+    // This will help a lot with handling the wikidata dataset in Git
+    const allDataSorted = allData.sort(function (a, b) {
+        return (a.unlocode + a.item > b.unlocode + a.item) ? 1 : -1
+    })
+
+    await fs.writeFileSync("../../data/wikidata/wikidata.json", JSON.stringify(allDataSorted, null, 2))
+}
+
+function extractCoordinates(coordsValue) {
+    const match = coordsRegex.exec(coordsValue)
+    return {
+        lat: match[2],
+        lon: match[1]
+    }
 }
 
 downloadFromWikidata()
