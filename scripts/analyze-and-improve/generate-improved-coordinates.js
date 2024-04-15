@@ -24,7 +24,11 @@ async function validateAllCoordinates() {
 
         // It doesn't matter what, we have manually determined before that Wikidata is best in these cases
         if (WIKIDATA_BEST.includes(unlocode)) {
-            const wikiDataEntry = wikidataDatabase[unlocode]
+            let wikiDataEntry = wikidataDatabase[unlocode]
+            if (unlocode === "CNHUA") {
+                // The script currently doesn't know how to handle 1 entry with 2 unlocodes. Hacky hardcoded workaround for now.
+                wikiDataEntry = wikidataDatabase["CNGZG"]
+            }
             const wikiDataEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (hardcoded to Wikidata)", wikiDataEntry.item]
             writeCsv(dataOut, wikiDataEntries)
             correctedCoordinates++
