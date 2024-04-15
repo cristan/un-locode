@@ -1,5 +1,6 @@
 import fs from "node:fs"
 
+const amount = 5000
 const sparqlQuery = `
     SELECT ?item ?itemLabel ?coords ?unlocode
     WHERE {
@@ -8,7 +9,7 @@ const sparqlQuery = `
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
     }
     ORDER BY ?item
-    LIMIT 5000
+    LIMIT ${5000}
     OFFSET $offset
 `
 
@@ -20,6 +21,7 @@ async function downloadFromWikidata() {
     let allData = []
 
     while (true) {
+        console.log(`Downloading Wikidata at offset: ${offset}`)
         const queryUrl = `${endpointUrl}&query=${encodeURIComponent(sparqlQuery.replace('$offset', offset))}`
 
         const fromWikidata = await fetch(queryUrl, {
@@ -53,7 +55,7 @@ async function downloadFromWikidata() {
             }))
 
         allData = allData.concat(simplifiedData)
-        offset += 5000 // Increase the offset for the next iteration
+        offset += amount // Increase the offset for the next iteration
     }
 
     // Sort the data, so they will have a consistent order
