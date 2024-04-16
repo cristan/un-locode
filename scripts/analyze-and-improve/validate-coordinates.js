@@ -2,6 +2,7 @@ import {readCsv} from "./util/readCsv.js";
 import {convertToDecimal} from "./util/coordinatesConverter.js";
 import {getNominatimData} from "./util/nominatim-loader.js";
 import {validateCoordinates} from "./util/entry-validator.js";
+import {UNLOCODE_BEST} from "./manual-unlocode-best.js";
 
 async function validateAllCoordinates() {
     // console.debug = function() {};
@@ -14,7 +15,7 @@ async function validateAllCoordinates() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || entry.country !== "CN") {
+        if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode) || entry.country !== "NL") {
             continue
         }
 
