@@ -95,7 +95,11 @@ export async function validateCoordinates(entry, nominatimData) {
                 return undefined
             }
             if (!validSubdivisionCode) {
-                message += `Please change the region to ${closeResult.subdivisionCode}.`
+                if (closeResult.subdivisionCode) {
+                    message += `Please change the region to ${closeResult.subdivisionCode}.`
+                } else {
+                    message += `Please change the region to a valid one.`
+                }
             } else {
                 message += `${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
             }
@@ -238,7 +242,11 @@ function getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, clos
         // TODO: also check for non-close results
     }
     const closeResult = closeResults[0]
-    message += `Please change the region to ${closeResult.subdivisionCode}.`
+    if (closeResult.subdivisionCode) {
+        message += `Please change the region to ${closeResult.subdivisionCode}.`
+    } else {
+        message += `Please change the region to a valid one.`
+    }
     const otherAlternatives = nominatimResult
         .filter(nm => {
             return nm !== closeResult
