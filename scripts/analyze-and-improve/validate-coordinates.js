@@ -15,7 +15,7 @@ async function validateAllCoordinates() {
         const entry = csvDatabase[unlocode]
 
         const decimalCoordinates = convertToDecimal(entry.coordinates)
-        if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode) || entry.country !== "NL") {
+        if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode) || entry.country !== "GB") {
             continue
         }
 
@@ -36,12 +36,12 @@ async function validateAllCoordinates() {
                 console.log(generatedLog + "\n")
             } else {
 
-                const urlReplacement = "https://www.openstreetmap.org/#map=12/$2/$3"
-                // const urlReplacement = "https://www.google.com/maps/@$2,$3,12z"
+                // const urlReplacement = "https://www.openstreetmap.org/#map=12/$2/$3"
+                const urlReplacement = "https://www.google.com/maps/@$2,$3,12z"
 
                 const html = generatedLog
                     .replaceAll(/https:\/\/unlocode\.info\/(\w{5})/g, '<a href="$&">$1</a>')
-                    .replaceAll(/(\d*N\s\d*E) \(([\d\\.]*), ([\d\\.]*)\)/g, `<a href="${urlReplacement}">$1</a>`)
+                    .replaceAll(/(\d*[NS]\s\d*[EW]) \((-?[\d\.]*), (-?[\d\.]*)\)/g, `<a href="${urlReplacement}">$1</a>`)
                     +"<br><br>"
                 console.log(html)
             }
