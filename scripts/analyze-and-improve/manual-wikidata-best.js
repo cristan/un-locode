@@ -95,6 +95,30 @@ export const WIKIDATA_BEST = [
     "UGPAF",// Maybe not technically the airport, but close enough
     "USUBP",
     "USARP",// Much bigger
+    "ZAGIY",
+    "USWQG",// Slightly bigger
+    "USWMQ",
+    "USAAO",
+    "USSYW",
+    "USUXY",
+    "USFKL",
+    "TREGZ",
+    "TRAKS",
+    "RUZHL",
+    "RUNVY",
+    "ROZUI",
+    "PLZDY",
+    "PKZRT",
+    "PKTHT",
+    "PKHPR",
+    "PKHFD",
+    "PHPRO",
+    "ATLKN",
+    "ATSTD",
+    "ATWAR",
+    "AUSCG",
+    "CNTJA",
+    "CNCFG",
 ]
 // There are 2 San Martino in Strada's! :O The one of the official coordinates, and the one in https://www.wikidata.org/wiki/Q42950
 // ITSPC https://maps.app.goo.gl/EARFzs2N9RaX3Cbv7 vs https://www.wikidata.org/wiki/Q42950
