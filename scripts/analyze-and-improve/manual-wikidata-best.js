@@ -92,6 +92,10 @@ export const WIKIDATA_BEST = [
     "ITZTX",
     "ITZVB",
     "ITVIN",
+    "ITAN2",
+    "ITYBB",
+    "ITCOO",
+    "ITZP2",
     "UGPAF",// Maybe not technically the airport, but close enough
     "USUBP",
     "USARP",// Much bigger
@@ -119,6 +123,7 @@ export const WIKIDATA_BEST = [
     "AUSCG",
     "CNTJA",
     "CNCFG",
+    "GBTIL",
 ]
 // There are 2 San Martino in Strada's! :O The one of the official coordinates, and the one in https://www.wikidata.org/wiki/Q42950
 // ITSPC https://maps.app.goo.gl/EARFzs2N9RaX3Cbv7 vs https://www.wikidata.org/wiki/Q42950
