@@ -112,7 +112,7 @@ async function validateAllCoordinates() {
                 continue
             }
         }
-        // If we're still here and still don't have a close result, choose Nominatim
+        // If we're still here and still don't have a close result, choose the first result from Nominatim
         correctedCoordinates++
         writeNominatimDataToCsv(dataOut, entry, firstNominatimResult, distance)
     }
