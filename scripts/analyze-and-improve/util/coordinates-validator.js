@@ -14,26 +14,34 @@ import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 // TODO: https://unlocode.info/CVBVC points to the one in the wrong country (or MDCAL, MYGTB) :O
 export async function validateCoordinates(entry, nominatimData) {
-    const decimalCoordinates = convertToDecimal(entry.coordinates)
-    const unlocode = entry.unlocode
-    const nominatimResult = nominatimData.result
-    const closeResults = nominatimResult.filter(n => {
-        return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
-    })
-    if (!decimalCoordinates) {
-        // Ignore entries without coordinates for now.
-        // Invalid coordinates are already handled by the validate-coordinates.js.
-        // We do want to check for invalid subdivision codes though
-        if (entry.subdivisionCode && !entry.subdivisionName) {
-            return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
-        }
+    if (!nominatimData) {
+        // Nominatim can't find it, which most likely means a non-standard name is found.
+        // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
+        // These should be called "Mondello" and "Acconia" to be found in nominatim.
+
+        // Let's ignore this for now because these 2 examples are actually fine.
+        return
     }
+
+    const unlocode = entry.unlocode
+    const decimalCoordinates = convertToDecimal(entry.coordinates)
+    if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode)) {
+        return
+    }
+
+    if (!nominatimData) {
+        // Nominatim can't find it, which most likely means a non-standard name is found.
+        // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
+        // These should be called "Mondello" and "Acconia" to be found in nominatim.
+
+        // Let's ignore this for now because these 2 examples are actually fine.
+        return
+    }
+    const nominatimResult = nominatimData.result
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
-    if (distance < 100 || UNLOCODE_BEST.includes(unlocode)) {
-        // The first result is close enough. Let's validate whether the subdivisionCode exists yet though
-        if (entry.subdivisionCode && !entry.subdivisionName) {
-            return getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults)
-        }
+    const maxDistance = 10
+    if (distance < maxDistance || UNLOCODE_BEST.includes(unlocode)) {
+        // The first result is close enough.
         return undefined
     }
     const scrapeType = nominatimData.scrapeType
@@ -98,7 +106,7 @@ export async function validateCoordinates(entry, nominatimData) {
                 if (closeResult.subdivisionCode) {
                     message += `Please change the region to ${closeResult.subdivisionCode}.`
                 } else {
-                    message += `Please change the region to a valid one.`
+                    message += `The coordinates seem right (${closeResult.name} is here), but the region should be changed.`
                 }
             } else {
                 message += `${closeResult.name} (${closeResult.subdivisionCode}) does exist at the provided coordinates, so the region should probably be changed to ${closeResult.subdivisionCode}.`
@@ -125,9 +133,9 @@ export async function validateCoordinates(entry, nominatimData) {
             return `${message}.`
         }
     }
-    else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)) {
+    else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < maxDistance)) {
         // Wrong first hit in Nominatim, but there's actually a hit which does match the coordinates
-        let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < 100)
+        let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < maxDistance)
         const biggestCloseLocationRank = closeItems.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         const biggestLocationFromResultsRank = nominatimResult.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         if (biggestCloseLocationRank >= 18 && biggestCloseLocationRank.addresstype !== "industrial" && biggestLocationFromResultsRank <= 16) {
@@ -158,7 +166,7 @@ export async function validateCoordinates(entry, nominatimData) {
             }
         })
 
-        if (closestDistance < 25) {
+        if (closestDistance < Math.min(maxDistance, 25)) {
             const detectedSubdivisionCode = closestInAnyRegion.subdivisionCode
             let message = `https://unlocode.info/${unlocode}: (${entry.city}): This entry has the subdivision code ${entry.subdivisionCode}, but the coordinates point to ${closestInAnyRegion.name} in ${detectedSubdivisionCode}! Either change the region to ${detectedSubdivisionCode} or change the coordinates to `
             if (nominatimResult.length === 1) {
@@ -210,7 +218,7 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
     return `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`
 }
 
-function getAlternativeNames(alternatives) {
+export function getAlternativeNames(alternatives) {
     let lastAlternativeName = ""
     let regionsThisName = []
 
@@ -232,28 +240,4 @@ function getAlternativeNames(alternatives) {
     }).filter(a => a !== "")
     const uniqueMapped = [...new Set(mapped)]
     return uniqueMapped.join(' or ')
-}
-
-function getInvalidSubdivisionCodeMessage(unlocode, entry, nominatimResult, closeResults) {
-    let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
-    message += `The subdivision code (${entry.subdivisionCode}) doesn't match any region! `
-    if (closeResults.length === 0) {
-        return message
-        // TODO: also check for non-close results
-    }
-    const closeResult = closeResults[0]
-    if (closeResult.subdivisionCode) {
-        message += `Please change the region to ${closeResult.subdivisionCode}.`
-    } else {
-        message += `Please change the region to a valid one.`
-    }
-    const otherAlternatives = nominatimResult
-        .filter(nm => {
-            return nm !== closeResult
-        })
-    const otherAlternativesInOtherRegion = otherAlternatives.some(a => a.subdivisionCode !== closeResults.subdivisionCode)
-    if (otherAlternatives.length > 0 && otherAlternativesInOtherRegion) {
-        message += ` It could also be that ${getAlternativeNames(otherAlternatives)} is meant.`
-    }
-    return message
 }

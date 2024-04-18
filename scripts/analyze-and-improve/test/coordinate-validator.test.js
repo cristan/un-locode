@@ -1,4 +1,4 @@
-import {validateCoordinates} from "../util/entry-validator.js";
+import {validateCoordinates} from "../util/coordinates-validator.js";
 import { expect } from 'chai';
 
 describe("EntryValidator", () => {

@@ -1,6 +1,7 @@
 import {readCsv, readSubdivisionData} from "./util/readCsv.js";
 import {getNominatimData} from "./util/nominatim-loader.js";
 
+// TODO: delete me
 async function createReport() {
     const csvDatabase = await readCsv()
     const subdivisions = readSubdivisionData()
