@@ -38,8 +38,8 @@ export async function validateCoordinates(entry, nominatimData) {
         return
     }
     const nominatimResult = nominatimData.result
-    const maxDistance = 10
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nominatimResult[0].lat, nominatimResult[0].lon));
+    const maxDistance = 100
     if (distance < maxDistance || UNLOCODE_BEST.includes(unlocode)) {
         // The first result is close enough.
         return undefined
