@@ -1,10 +1,16 @@
 import {readCsv} from "./util/readCsv.js";
-import {convertToDecimal, getDistanceFromLatLonInKm} from "./util/coordinatesConverter.js";
+import {
+    convertToBoth,
+    convertToDecimal,
+    convertToUnlocode,
+    getDistanceFromLatLonInKm
+} from "./util/coordinatesConverter.js";
 import {getNominatimData} from "./util/nominatim-loader.js";
 import {validateCoordinates} from "./util/coordinates-validator.js";
 import {UNLOCODE_BEST} from "./manual-unlocode-best.js";
 import {getInvalidRegionMessage, getNoRegionMessage} from "./util/region-validator.js";
 import {readWikidata} from "./util/wikidata-reader.js";
+import {detectCoordinates} from "./util/coordinate-detector.js";
 
 async function validateEntries() {
     // console.debug = function() {};
@@ -17,6 +23,7 @@ async function validateEntries() {
     const coordinatesLogs = []
     const invalidRegionMessages = []
     const noSuggestionFoundMessages = []
+    const newCoordinateLogs = []
 
 
     const useHtml = true
@@ -39,8 +46,20 @@ async function validateEntries() {
             }
         }
 
-        if (!nominatimData && !wikiEntry && !entry.coordinates) {
-            noSuggestionFoundMessages.push(`https://unlocode.info/${entry.unlocode}: (${entry.city}): Entry could not be found and has no coordinates. Please validate if this entry should be kept`)
+        if (!entry.coordinates) {
+            const detected = await detectCoordinates(entry, nominatimData, wikiEntry, 100)
+            if (!detected) {
+                noSuggestionFoundMessages.push(`https://unlocode.info/${entry.unlocode}: (${entry.city}): Entry could not be found and has no coordinates. Please validate if this entry should be kept`)
+            } else {
+                const options = [detected]
+                if (detected.alternatives) {
+                    options.push(...detected.alternatives)
+                }
+                const optionsString = options
+                    .map(o => `${convertToBoth(o.lat, o.lon)} Source: ${o.sourceUrl}`)
+                    .join(" or ")
+                newCoordinateLogs.push(`https://unlocode.info/${unlocode} (${entry.city}) Coordinates should be set to ${optionsString}`)
+            }
         }
     }
 
@@ -52,7 +71,7 @@ async function validateEntries() {
     }
 
     if (invalidRegionMessages.length > 0) {
-        console.log("<h1>Non-existent regions used</h1>")
+        console.log("<h1>Non-valid region codes used</h1>")
     }
     for (const invalidRegionMessage of invalidRegionMessages) {
         doLog(invalidRegionMessage, useHtml)
@@ -69,22 +88,6 @@ async function validateEntries() {
         doLog(noRegionMessage, useHtml)
     }
 
-    // It's a little stupid to read a CVS when I can refactor some code and use the code used to generate this CSV,
-    // and it's a shame that in case of Nominatim, only 1 result is shown,
-    // but hey, I aint getting paid to write this, so this will do for now
-    const csvDatabaseImproved = await readCsv(true)
-
-    const newCoordinateLogs = []
-    for (const entry of filteredEntries) {
-        if (entry.coordinates) {
-            continue
-        }
-        const unlocode = entry.unlocode
-        const entryImproved = csvDatabaseImproved[unlocode]
-        if (entryImproved.coordinates) {
-            newCoordinateLogs.push(`https://unlocode.info/${unlocode} (${entryImproved.city}) Coordinates should be set to ${entryImproved.coordinates}. Source: ${entryImproved.source}`)
-        }
-    }
     if (newCoordinateLogs.length > 0) {
         console.log(`<h1>Suggested new coordinates</h1>`)
     }
@@ -115,27 +118,27 @@ async function validateEntries() {
         doLog(noDateLog, useHtml)
     }
 
-    const coordinateGroups = {}; // Object to store groups of entries with the same coordinates
-
-    // Group entries by coordinates
-    Object.values(filteredEntries).forEach(entry => {
-        const coordinatesString = entry.coordinates.toString();
-        if (!coordinateGroups[coordinatesString]) {
-            coordinateGroups[coordinatesString] = [];
-        }
-        coordinateGroups[coordinatesString].push(entry);
-    });
-
-    // Log entries with duplicate coordinates
-    console.log(`<h1>Entries with duplicate coordinates</h1>`)
-    for (const coordinatesString in coordinateGroups) {
-        const entries = coordinateGroups[coordinatesString];
-        if (entries.length > 1 && coordinatesString.length > 1) {
-            const entryLinks = entries.map(entry => `<a href="https://unlocode.info/${entry.unlocode}">${entry.city}</a>`).join(', ');
-            const logMessage = `<p>${entryLinks} share the same coordinates (${coordinatesString})</p>`;
-            doLog(logMessage, false);
-        }
-    }
+    // const coordinateGroups = {}; // Object to store groups of entries with the same coordinates
+    //
+    // // Group entries by coordinates
+    // Object.values(filteredEntries).forEach(entry => {
+    //     const coordinatesString = entry.coordinates.toString();
+    //     if (!coordinateGroups[coordinatesString]) {
+    //         coordinateGroups[coordinatesString] = [];
+    //     }
+    //     coordinateGroups[coordinatesString].push(entry);
+    // });
+    //
+    // // Log entries with duplicate coordinates
+    // console.log(`<h1>Entries with duplicate coordinates</h1>`)
+    // for (const coordinatesString in coordinateGroups) {
+    //     const entries = coordinateGroups[coordinatesString];
+    //     if (entries.length > 1 && coordinatesString.length > 1) {
+    //         const entryLinks = entries.map(entry => `<a href="https://unlocode.info/${entry.unlocode}">${entry.city}</a>`).join(', ');
+    //         const logMessage = `<p>${entryLinks} share the same coordinates (${coordinatesString})</p>`;
+    //         doLog(logMessage, false);
+    //     }
+    // }
 
     // TODO: show number of results after each header
     // TODO: take into account wikidata for the coordinate suggestions (not for GB, but definitely for IT)

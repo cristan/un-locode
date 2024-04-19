@@ -36,6 +36,10 @@ export function convertNmToUnlocodeText(nm) {
     return `<a href="${nm.sourceUrl}">${convertToUnlocode(nm.lat, nm.lon)}</a>`
 }
 
+export function convertToBoth(lat, lon) {
+    return `${convertToUnlocode(lat, lon)} (${lat}, ${lon})`
+}
+
 export function convertToUnlocode(decimalLat, decimalLon) {
     const latDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLat));
     const lonDegreesMinutes = convertToDegreesMinutes(Math.abs(decimalLon));
