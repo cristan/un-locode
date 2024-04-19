@@ -1,5 +1,29 @@
 import fs from "node:fs"
 
+// TODO: also read the subdivision code via this query: https://w.wiki/9ojz
+// It's slower though
+/*
+SELECT ?item ?locode ?itemLabel ?coords ?subdivisionCode1 ?subdivisionCode2 ?subdivisionCode3
+WHERE {
+  ?item wdt:P1937 ?locode.
+  ?item wdt:P625 ?coords.
+  OPTIONAL {
+    ?item wdt:P131 ?subdivisionEntity1.
+    OPTIONAL { ?subdivisionEntity1 wdt:P300 ?subdivisionCode1. }
+    OPTIONAL {
+      ?subdivisionEntity1 wdt:P131 ?subdivisionEntity2.
+      OPTIONAL { ?subdivisionEntity2 wdt:P300 ?subdivisionCode2. }
+      OPTIONAL {
+        ?subdivisionEntity2 wdt:P131 ?subdivisionEntity3.
+        OPTIONAL { ?subdivisionEntity3 wdt:P300 ?subdivisionCode3. }
+      }
+    }
+  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+LIMIT 1000
+ */
+
 const amountPerRequest = 6000
 const sparqlQuery = `
     SELECT ?item ?itemLabel ?coords ?unlocode
