@@ -72,7 +72,7 @@ async function validateAllCoordinates() {
 
         const nominatimResult = nominatimData.result
         const firstNominatimResult = nominatimResult[0]
-        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, firstNominatimResult.lat, firstNominatimResult.lon));
+        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, firstNominatimResult.lat, firstNominatimResult.lon));
         if (distance < 100 || UNLOCODE_BEST.includes(unlocode)) {
             entries.push(distance, "UN/LOCODE")
             writeCsv(dataOut, entries)
@@ -80,11 +80,11 @@ async function validateAllCoordinates() {
         }
 
         const closeResults = nominatimResult.filter(n => {
-            return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+            return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 100
         })
         if (closeResults.length !== 0) {
             // The first hit isn't close, but there is another one who is. Keep UN/LOCODE
-            const distanceCloseResult = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0].lon));
+            const distanceCloseResult = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, closeResults[0].lat, closeResults[0].lon));
             entries.push(distanceCloseResult, "UN/LOCODE")
             writeCsv(dataOut, entries)
             continue
@@ -98,7 +98,7 @@ async function validateAllCoordinates() {
             await downloadByCityIfNeeded(entry)
             const nominatimDataByCity = readNominatimDataByCity(unlocode)?.result
             const closeResults = nominatimDataByCity?.filter(n => {
-                return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+                return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 100
             })
             if (closeResults !== undefined && closeResults.length !== 0) {
                 // We found a close result when not searching by region. Assume the coordinates are correct
@@ -107,7 +107,7 @@ async function validateAllCoordinates() {
                 // Example: ITAN2: The coordinates point to Antignano,Livorno, but there actually is a village Antignano, Asti.
                 // Still, in most cases it's just that the wrong region is set in UN/LOCODE: choose that
 
-                entries.push(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, closeResults[0].lat, closeResults[0].lon), "UN/LOCODE")
+                entries.push(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, closeResults[0].lat, closeResults[0].lon), "UN/LOCODE")
                 writeCsv(dataOut, entries)
                 continue
             }

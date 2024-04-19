@@ -38,8 +38,8 @@ export async function validateCoordinates(entry, nominatimData) {
         return
     }
     const nominatimResult = nominatimData.result
-    const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon));
     const maxDistance = 10
+    const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nominatimResult[0].lat, nominatimResult[0].lon));
     if (distance < maxDistance || UNLOCODE_BEST.includes(unlocode)) {
         // The first result is close enough.
         return undefined
@@ -57,7 +57,7 @@ export async function validateCoordinates(entry, nominatimData) {
     if (!entry.subdivisionCode) {
         // It could be that the first result is just the wrong one. Let's see if we can find a close one (which probably is the correct one)
         const closeResults = nominatimResult.filter(n => {
-            return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
+            return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 25
         })
         if (closeResults.length !== 0) {
             const closeResult = closeResults[0]
@@ -83,7 +83,7 @@ export async function validateCoordinates(entry, nominatimData) {
     else if (scrapeType === "byCity" && nominatimResult[0].subdivisionCode !== entry.subdivisionCode) {
         // First hit doesn't match the subdivision code, and we scraped by city (so we couldn't find anything with the matching region).
         const closeResults = nominatimResult.filter(n => {
-            return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 25
+            return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 25
         })
 
         let message = `https://unlocode.info/${unlocode}: (${entry.city}): `
@@ -133,15 +133,15 @@ export async function validateCoordinates(entry, nominatimData) {
             return `${message}.`
         }
     }
-    else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < maxDistance)) {
+    else if (nominatimResult.some(nm => getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nm.lat, nm.lon) < maxDistance)) {
         // Wrong first hit in Nominatim, but there's actually a hit which does match the coordinates
-        let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nm.lat, nm.lon) < maxDistance)
+        let closeItems = nominatimResult.filter(nm => getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nm.lat, nm.lon) < maxDistance)
         const biggestCloseLocationRank = closeItems.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         const biggestLocationFromResultsRank = nominatimResult.reduce((min, current) => Math.min(min, current.place_rank), Infinity);
         if (biggestCloseLocationRank >= 18 && biggestCloseLocationRank.addresstype !== "industrial" && biggestLocationFromResultsRank <= 16) {
             // Example: https://unlocode.info/CNSTI
             const biggerResults = nominatimResult.filter(nm => nm.place_rank <= 16)
-            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertNmToUnlocodeText(b)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
+            const biggerResultText = biggerResults.map(b => `${b.addresstype} ${b.name} at ${convertNmToUnlocodeText(b)} (${Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, b.lat, b.lon))} km away; source: ${b.sourceUrl})`).join(' or ')
             return `https://unlocode.info/${unlocode}: (${entry.city}): The coordinates do point to ${closeItems[0].name}, but it's a small ${closeItems[0].addresstype} and you have the bigger ${biggerResultText}. Please doublecheck if this is pointing to the correct location.`
         }
         // Example: https://unlocode.info/CNBCO
@@ -159,7 +159,7 @@ export async function validateCoordinates(entry, nominatimData) {
         let closestDistance = Number.MAX_VALUE
         let closestInAnyRegion = undefined
         nominatimDataByCity?.forEach(c => {
-            const distance = getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, c.lat, c.lon);
+            const distance = getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, c.lat, c.lon);
             if (distance < closestDistance) {
                 closestInAnyRegion = c
                 closestDistance = distance
@@ -203,7 +203,7 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
     const options = nominatimResult.map(nm => {
         const smallVillage = isSmallVillage(nm)
         const before = smallVillage ? "maybe " : ""
-        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, nominatimResult[0].lat, nominatimResult[0].lon))
+        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nominatimResult[0].lat, nominatimResult[0].lon))
         let after = ""
         if (nm.name !== entry.city) {
             after += ` where ${nm.name} is located`
@@ -215,7 +215,7 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
     })
     const allOptions = Array.from(options).join(' or ')
 
-    return `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}) should be changed to ${allOptions}`
+    return `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.lat}, ${decimalCoordinates.lon}) should be changed to ${allOptions}`
 }
 
 export function getAlternativeNames(alternatives) {

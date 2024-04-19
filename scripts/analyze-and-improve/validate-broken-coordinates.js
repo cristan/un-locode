@@ -11,12 +11,12 @@ async function validateBrokenCoordinates() {
             console.log(`Invalid coordinates for ${unlocode}: ${entry.coordinates}`)
             continue
         }
-        if(decimalCoordinates.latitude > 90 || decimalCoordinates.latitude < -90) {
-            console.log(`Invalid latitude for ${unlocode}: ${entry.coordinates} => ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}`)
+        if(decimalCoordinates.lat > 90 || decimalCoordinates.lat < -90) {
+            console.log(`Invalid latitude for ${unlocode}: ${entry.coordinates} => ${decimalCoordinates.lat}, ${decimalCoordinates.lon}`)
             continue
         }
-        if(decimalCoordinates.longitude > 180 || decimalCoordinates.longitude < -180) {
-            console.log(`Invalid longitude for ${unlocode}: ${entry.coordinates} => ${decimalCoordinates.latitude}, ${decimalCoordinates.longitude}`)
+        if(decimalCoordinates.lon > 180 || decimalCoordinates.lon < -180) {
+            console.log(`Invalid longitude for ${unlocode}: ${entry.coordinates} => ${decimalCoordinates.lat}, ${decimalCoordinates.lon}`)
             continue
         }
     }

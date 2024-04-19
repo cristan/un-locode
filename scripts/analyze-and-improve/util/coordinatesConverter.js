@@ -23,8 +23,8 @@ export function convertToDecimal(input) {
 
         // Return the result as an object
         return {
-            latitude: decimalLat,
-            longitude: decimalLon
+            lat: decimalLat,
+            lon: decimalLon
         };
     } else {
         // console.warn(`Invalid coordinate format ${input}`)

@@ -18,7 +18,7 @@ export function getInvalidRegionMessage(entry, nominatimData) {
 
     const decimalCoordinates = convertToDecimal(entry.coordinates)
     const closeResults = nominatimData.result.filter(n => {
-        return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+        return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 100
     })
 
     const baseErrorMessage = `The subdivision code (${entry.subdivisionCode}) doesn't match any region! `
@@ -38,7 +38,7 @@ export function getNoRegionMessage(entry, nominatimData) {
 
     const decimalCoordinates = convertToDecimal(entry.coordinates)
     const closeResults = nominatimData.result.filter(n => {
-        return getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, n.lat, n.lon) < 100
+        return getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, n.lat, n.lon) < 100
     })
 
     const baseErrorMessage = `No subdivision code specified!`

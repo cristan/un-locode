@@ -21,9 +21,9 @@ async function validateAllCoordinates() {
             continue
         }
 
-        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.latitude, decimalCoordinates.longitude, wikiEntry.lat, wikiEntry.lon))
+        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiEntry.lat, wikiEntry.lon))
         if (distance > 100 && !UNLOCODE_BEST.includes(unlocode)) {
-            console.log(`https://unlocode.info/${unlocode} ${entry.city} vs ${wikiEntry.itemLabel} ${distance}km distance between https://www.google.com/maps?z=12&ll=${decimalCoordinates.latitude},${decimalCoordinates.longitude} and https://www.google.com/maps?z=12&ll=${wikiEntry.lat},${wikiEntry.lon}. ${unlocode},${convertToUnlocode(wikiEntry.lat, wikiEntry.lon)} Source: ${wikiEntry.item}`)
+            console.log(`https://unlocode.info/${unlocode} ${entry.city} vs ${wikiEntry.itemLabel} ${distance}km distance between https://www.google.com/maps?z=12&ll=${decimalCoordinates.lat},${decimalCoordinates.lon} and https://www.google.com/maps?z=12&ll=${wikiEntry.lat},${wikiEntry.lon}. ${unlocode},${convertToUnlocode(wikiEntry.lat, wikiEntry.lon)} Source: ${wikiEntry.item}`)
             count++
         }
         allCount++
