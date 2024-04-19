@@ -50,7 +50,7 @@ function getRegionErrorMessage(entry, baseErrorMessage, closeResults, nominatimD
     message += baseErrorMessage
     if (closeResults.length === 0) {
         return message
-        // TODO: also check for non-close results
+        // TODO: also check for non-close results, or maybe check the closest result
     }
     const closeResult = closeResults[0]
     if (closeResult.subdivisionCode) {

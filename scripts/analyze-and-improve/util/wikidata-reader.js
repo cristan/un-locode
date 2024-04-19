@@ -8,5 +8,8 @@ export function readWikidata() {
         wikiData[entry.unlocode] = entry
     })
 
+    // The script currently doesn't know how to handle 1 entry with 2 unlocodes. Hacky hardcoded workaround for now.
+    wikiData["CNHUA"] = wikiData["CNGZG"]
+
     return wikiData
 }
