@@ -5,7 +5,10 @@ export function readWikidata() {
     const wikiData = {}
 
     data.forEach(entry => {
-        wikiData[entry.unlocode] = entry
+        wikiData[entry.unlocode] = {
+            ...entry,
+            sourceUrl: entry.item
+        }
     })
 
     // The script currently doesn't know how to handle 1 entry with 2 unlocodes. Hacky hardcoded workaround for now.

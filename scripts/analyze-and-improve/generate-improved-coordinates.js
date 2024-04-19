@@ -25,7 +25,7 @@ async function validateAllCoordinates() {
         // It doesn't matter what, we have manually determined before that Wikidata is best in these cases
         if (WIKIDATA_BEST.includes(unlocode)) {
             const wikiDataEntry = wikidataDatabase[unlocode]
-            const wikiDataEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (hardcoded to Wikidata)", wikiDataEntry.item]
+            const wikiDataEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (hardcoded to Wikidata)", wikiDataEntry.sourceUrl]
             writeCsv(dataOut, wikiDataEntries)
             correctedCoordinates++
             continue
@@ -42,7 +42,7 @@ async function validateAllCoordinates() {
                     entries.push("N/A", "N/A")
                     writeCsv(dataOut, entries)
                 } else {
-                    const wikiDataEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (no UN/LOCODE)", wikiDataEntry.item]
+                    const wikiDataEntries = [entry.change, entry.country, entry.location, entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, entry.status, entry.function, entry.date, entry.iata, convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon), entry.remarks, "N/A (no UN/LOCODE)", wikiDataEntry.sourceUrl]
                     writeCsv(dataOut, wikiDataEntries)
                 }
             } else {
