@@ -9,21 +9,25 @@ export async function detectCoordinates(entry, nominatimData, wikiDataEntry, max
     const decimalCoordinates = convertToDecimal(entry.coordinates)
 
     if (WIKIDATA_BEST.includes(unlocode) || (!nominatimData && wikiDataEntry)) {
+        if (decimalCoordinates && getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiDataEntry.lat, wikiDataEntry.lon) < maxDistance) {
+            // When we have a Wikidata entry, check if it's close to the original unlocode one. If yes, just go for unlocode
+            return getUnlocodeResult(entry, decimalCoordinates)
+        }
         return {...wikiDataEntry, type: "Wikidata"}
     }
 
+    const nominatimResult = nominatimData?.result
+    const firstNominatimResult = nominatimResult?.[0]
     if (!nominatimData || UNLOCODE_BEST.includes(unlocode)) {
         // When Nominatim can't find it, which most likely means a non-standard name is found.
         // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
         // These should be called "Mondello" and "Acconia" to be found in nominatim.
 
         // Return the UN/LOCODE entry, regardless of whether it has coordinates or not
-        return getUnlocodeResult(entry, decimalCoordinates)
+        return getUnlocodeResult(entry, decimalCoordinates, firstNominatimResult)
     }
 
-    const nominatimResult = nominatimData.result
-    const firstNominatimResult = nominatimResult[0]
-    if (entry.coordinates) {
+    if (decimalCoordinates) {
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, firstNominatimResult.lat, firstNominatimResult.lon));
         if (distance < maxDistance) {
             // The first result is close enough.
@@ -33,7 +37,7 @@ export async function detectCoordinates(entry, nominatimData, wikiDataEntry, max
         // Check if there's another result than the first one who is close. If yes, return that
         const closeResult =  await findCloseResult(maxDistance, nominatimResult, decimalCoordinates, entry, nominatimData, unlocode);
         if (closeResult) {
-            return {...closeResult, type: "Nominatim"}
+            return closeResult
         }
     }
 
@@ -53,7 +57,7 @@ export async function detectCoordinates(entry, nominatimData, wikiDataEntry, max
             options.push(wikiDataEntry)
         }
     }
-    return {...firstNominatimResult, type: "Nominatim", options}
+    return {...firstNominatimResult, decimalCoordinates, type: "Nominatim", options}
 }
 
 async function findCloseResult(maxDistance, nominatimResult, decimalCoordinates, entry, nominatimData, unlocode) {
