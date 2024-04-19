@@ -51,12 +51,15 @@ async function validateEntries() {
             if (!detected) {
                 noSuggestionFoundMessages.push(`https://unlocode.info/${entry.unlocode}: (${entry.city}): Entry could not be found and has no coordinates. Please validate if this entry should be kept`)
             } else {
-                const options = [detected]
-                if (detected.alternatives) {
-                    options.push(...detected.alternatives)
-                }
+                const options = detected.options ?? [detected]
                 const optionsString = options
-                    .map(o => `${convertToBoth(o.lat, o.lon)} Source: ${o.sourceUrl}`)
+                    .map(o => {
+                        if (o.sources) {
+                            return `${convertToBoth(o.lat, o.lon)} Sources: ${o.sources.map(s => s.sourceUrl).join(" and ")}`
+                        } else {
+                            return `${convertToBoth(o.lat, o.lon)} Source: ${o.sourceUrl}`
+                        }
+                    })
                     .join(" or ")
                 newCoordinateLogs.push(`https://unlocode.info/${unlocode} (${entry.city}) Coordinates should be set to ${optionsString}`)
             }

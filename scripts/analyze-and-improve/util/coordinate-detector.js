@@ -1,5 +1,5 @@
 import {WIKIDATA_BEST} from "../manual-wikidata-best.js";
-import {convertToDecimal, getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
+import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
 import {readNominatimDataByCity} from "./nominatim-loader.js";
@@ -38,16 +38,22 @@ export async function detectCoordinates(entry, nominatimData, wikiDataEntry, max
     }
 
     // No overrides encountered, no results found close to the unlocode coordinates
-    let alternatives = undefined
+    let options = undefined
     if (nominatimResult.length > 1 || wikiDataEntry) {
-        alternatives = []
-        // TODO: combine with WikiData entry when they have the same unlocode coordinates
-        alternatives.push(...nominatimResult.slice(1))
-        if (wikiDataEntry) {
-            alternatives.push(wikiDataEntry)
+        options = []
+        options.push(...nominatimResult)
+        let wikiDataEntryUsed = false
+        options.forEach(a => {
+            if (!wikiDataEntryUsed && wikiDataEntry && convertToUnlocode(a.lat, a.lon) === convertToUnlocode(wikiDataEntry.lat, wikiDataEntry.lon)) {
+                a.sources = [a, wikiDataEntry]
+                wikiDataEntryUsed = true
+            }
+        })
+        if (wikiDataEntry && !wikiDataEntryUsed) {
+            options.push(wikiDataEntry)
         }
     }
-    return {...firstNominatimResult, type: "Nominatim", alternatives}
+    return {...firstNominatimResult, type: "Nominatim", options}
 }
 
 async function findCloseResult(maxDistance, nominatimResult, decimalCoordinates, entry, nominatimData, unlocode) {
