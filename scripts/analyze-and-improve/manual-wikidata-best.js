@@ -77,8 +77,8 @@ export const WIKIDATA_BEST = [
     "IRTEW",// Close to Tohid airport
     "ITABO",// Is actually in Parma
     "ITBBG",
-    "ITCN5",
-    "ITCC2",// The maintainer of Italy actually looked at the Wikidata entries for Italy, so if in doubt, choose Wikidata
+    "ITCN5",// The maintainer of Italy actually looked at the Wikidata entries for Italy, so if in doubt, choose Wikidata
+    "ITIGN",
     "ITZIC",
     "ITZXG",
     "ITMRZ",
@@ -96,7 +96,6 @@ export const WIKIDATA_BEST = [
     "ITYBB",
     "ITCOO",
     "ITZP2",
-    "ITFDB",
     "ITSSD",
     "ITSPC",
     "ITZAL",

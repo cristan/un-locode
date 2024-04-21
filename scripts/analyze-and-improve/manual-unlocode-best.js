@@ -100,8 +100,10 @@ export const UNLOCODE_BEST =[
     "INCBS", // Pretty stupid name in unlocode, but ok
     "INBRS", // same here
     "INZUM",
+    "ITCC2",
     "ITBBJ",
-    "ITRMG",// Name should probably be changed from Rio Maggiore to Riomaggiore, but the coordiantes match
+    "ITRMG",// Name should probably be changed from Rio Maggiore to Riomaggiore, but the coordinates match
+    "ITFDB",
     "JPSWR",
     "LSMPS",
     "MXAOE",
