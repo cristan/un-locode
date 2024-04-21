@@ -21,15 +21,16 @@ export async function validateCoordinates(entry, nominatimData, wikiEntry, maxDi
         return
     }
 
-    if (WIKIDATA_BEST.includes(unlocode) && (wikiEntry && entry.country === "IT")) {
+    if (WIKIDATA_BEST.includes(unlocode) || (wikiEntry && entry.country === "IT")) {
         const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiEntry.lat, wikiEntry.lon))
-
-        let message = `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.lat}, ${decimalCoordinates.lon}) should be changed to ${convertToBoth(wikiEntry.lat, wikiEntry.lon)} = ${distance} km${distance > 1000 ? '(!)' : ""} away; `
-        if (!entry.subdivisionName && wikiEntry.subdivisionCode) {
-            message += `the region should be set to ${wikiEntry.subdivisionCode} `
+        if (distance > maxDistance) {
+            let message = `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.lat}, ${decimalCoordinates.lon}) should be changed to ${convertToBoth(wikiEntry.lat, wikiEntry.lon)} = ${distance}km${distance > 1000 ? '(!)' : ""} away; `
+            if (!entry.subdivisionName && wikiEntry.subdivisionCode) {
+                message += `the region should be set to ${wikiEntry.subdivisionCode} `
+            }
+            message += `source: ${wikiEntry.sourceUrl}`
+            return message
         }
-        message += `source: ${wikiEntry.sourceUrl}`
-        return message
     }
 
     if (!nominatimData) {
@@ -222,7 +223,7 @@ function getIncorrectLocationLog(nominatimResult, decimalCoordinates, entry, unl
         if (smallVillage) {
             after += ` (WARN: small village)`
         }
-        return `${before}${convertNmToUnlocodeText(nm)} = ${distance} km${distance > 1000 ? '(!)' : ""} away${after}; source: ${nm.sourceUrl}`
+        return `${before}${convertNmToUnlocodeText(nm)} = ${distance}km${distance > 1000 ? '(!)' : ""} away${after}; source: ${nm.sourceUrl}`
     })
     const allOptions = Array.from(options).join(' or ')
 
