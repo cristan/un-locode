@@ -161,6 +161,7 @@ function doLog(text, useHtml) {
         const html = text
                 .replaceAll(/https:\/\/unlocode\.info\/(\w{5})/g, '<a href="$&">$1</a>')
                 .replaceAll(/(\d*[NS]\s\d*[EW]) \((-?[\d\.]*), (-?[\d\.]*)\)/g, `<a href="${urlReplacement}">$1</a>`)
+                .replaceAll(/(ource: )(.*)/g, `$1 <a href="$2">$2</a>`)
         console.log(html.replaceAll("\n", "<br>")+"<br>")
     }
 }
