@@ -26,11 +26,23 @@ LIMIT 1000
 
 const amountPerRequest = 6000
 const sparqlQuery = `
-    SELECT ?item ?itemLabel ?coords ?unlocode
+    SELECT DISTINCT ?item ?unlocode ?itemLabel ?coords ?subdivisionCode1 ?subdivisionCode2 ?subdivisionCode3
     WHERE {
-        ?item wdt:P1937 ?unlocode.
-        ?item wdt:P625 ?coords.
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+      ?item wdt:P1937 ?unlocode.
+      ?item wdt:P625 ?coords.
+      OPTIONAL {
+        ?item wdt:P131 ?subdivisionEntity1.
+        OPTIONAL { ?subdivisionEntity1 wdt:P300 ?subdivisionCode1. }
+        OPTIONAL {
+          ?subdivisionEntity1 wdt:P131 ?subdivisionEntity2.
+          OPTIONAL { ?subdivisionEntity2 wdt:P300 ?subdivisionCode2. }
+          OPTIONAL {
+            ?subdivisionEntity2 wdt:P131 ?subdivisionEntity3.
+            OPTIONAL { ?subdivisionEntity3 wdt:P300 ?subdivisionCode3. }
+          }
+        }
+      }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
     }
     ORDER BY ?item
     LIMIT ${amountPerRequest}
@@ -75,7 +87,10 @@ async function downloadFromWikidata() {
                 itemLabel: result.itemLabel.value,
                 lat: extractCoordinates(result.coords.value).lat,
                 lon: extractCoordinates(result.coords.value).lon,
-                unlocode: result.unlocode.value
+                unlocode: result.unlocode.value,
+                subdivisionCode1: result.subdivisionCode1?.value,
+                subdivisionCode2: result.subdivisionCode2?.value,
+                subdivisionCode3: result.subdivisionCode3?.value,
             }))
 
         allData = allData.concat(simplifiedData)

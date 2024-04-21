@@ -5,9 +5,13 @@ export function readWikidata() {
     const wikiData = {}
 
     data.forEach(entry => {
+        // TODO: there are duplicate items. This just overrides the first one when we encounter the second
+        let subdivisionCodeRaw = entry.subdivisionCode1 ?? entry.subdivisionCode2 ?? entry.subdivisionCode3
+
         wikiData[entry.unlocode] = {
             ...entry,
-            sourceUrl: entry.item
+            sourceUrl: entry.item,
+            subdivisionCode: subdivisionCodeRaw?.substring(3)
         }
     })
 
