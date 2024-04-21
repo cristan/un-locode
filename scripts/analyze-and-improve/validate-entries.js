@@ -27,7 +27,7 @@ async function validateEntries() {
 
 
     const useHtml = true
-
+    const maxDistance = 100
     const filteredEntries = Object.values(csvDatabase).filter(entry => {
         return entry.country === "GB"
     })
@@ -36,7 +36,7 @@ async function validateEntries() {
         const wikiEntry = wikiData[unlocode]
 
         const nominatimData = await getNominatimData(entry)
-        const coordinatesLog = await validateCoordinates(entry, nominatimData)
+        const coordinatesLog = await validateCoordinates(entry, nominatimData, wikiEntry, maxDistance)
         if (coordinatesLog) {
             coordinatesLogs.push(coordinatesLog)
         } else {

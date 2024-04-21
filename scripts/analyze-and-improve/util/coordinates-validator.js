@@ -1,11 +1,12 @@
 import {
-    convertNmToUnlocodeText,
+    convertNmToUnlocodeText, convertToBoth,
     convertToDecimal,
     getDistanceFromLatLonInKm
 } from "./coordinatesConverter.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
 import {isSmallVillage, readNominatimDataByCity} from "./nominatim-loader.js";
 import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
+import {WIKIDATA_BEST} from "../manual-wikidata-best.js";
 
 /**
  * Checks if the coordinates don't match the first hit on Nominatim and returns an as helpful error message as possible.
@@ -13,19 +14,30 @@ import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
  */
 // TODO: problematic case: ITB52: this doesn't exist in OpenStreetMap :O
 // TODO: https://unlocode.info/CVBVC points to the one in the wrong country (or MDCAL, MYGTB) :O
-export async function validateCoordinates(entry, nominatimData) {
+export async function validateCoordinates(entry, nominatimData, wikiEntry, maxDistance) {
+    const unlocode = entry.unlocode
+    const decimalCoordinates = convertToDecimal(entry.coordinates)
+    if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode)) {
+        return
+    }
+
+    if (WIKIDATA_BEST.includes(unlocode) && (wikiEntry && entry.country === "IT")) {
+        const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiEntry.lat, wikiEntry.lon))
+
+        let message = `https://unlocode.info/${unlocode}: (${entry.city}): Coordinates ${entry.coordinates} (${decimalCoordinates.lat}, ${decimalCoordinates.lon}) should be changed to ${convertToBoth(wikiEntry.lat, wikiEntry.lon)} = ${distance} km${distance > 1000 ? '(!)' : ""} away; `
+        if (!entry.subdivisionName && wikiEntry.subdivisionCode) {
+            message += `the region should be set to ${wikiEntry.subdivisionCode} `
+        }
+        message += `source: ${wikiEntry.sourceUrl}`
+        return message
+    }
+
     if (!nominatimData) {
         // Nominatim can't find it, which most likely means a non-standard name is found.
         // For example ITMND which has the name "Mondello, Palermo" or ITAQW with the name "Acconia Di Curinga"
         // These should be called "Mondello" and "Acconia" to be found in nominatim.
 
         // Let's ignore this for now because these 2 examples are actually fine.
-        return
-    }
-
-    const unlocode = entry.unlocode
-    const decimalCoordinates = convertToDecimal(entry.coordinates)
-    if (!decimalCoordinates || UNLOCODE_BEST.includes(unlocode)) {
         return
     }
 
@@ -39,7 +51,6 @@ export async function validateCoordinates(entry, nominatimData) {
     }
     const nominatimResult = nominatimData.result
     const distance = Math.round(getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, nominatimResult[0].lat, nominatimResult[0].lon));
-    const maxDistance = 100
     if (distance < maxDistance || UNLOCODE_BEST.includes(unlocode)) {
         // The first result is close enough.
         return undefined
