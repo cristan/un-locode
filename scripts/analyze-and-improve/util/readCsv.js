@@ -30,6 +30,15 @@ export function readSubdivisionData() {
 export async function readCsv(improved = false) {
     const subdivisionDatabase = readSubdivisionData()
 
+    const countryList = fs.readFileSync(`../../data/country-codes.csv`, 'utf8').split("\n")
+    // Ignore the first entry: that's the header
+    countryList.shift()
+    const countries = {}
+    for (const record of countryList) {
+        const columns = parseCSV(record)
+        countries[columns[0]] = columns[1]
+    }
+
     const codeList = fs.readFileSync(`../../data/code-list${improved ? '-improved' : ''}.csv`, 'utf8').split("\n")
     // Ignore the first entry: that's the header
     codeList.shift()
@@ -42,6 +51,7 @@ export async function readCsv(improved = false) {
 
         const change = columns[UNLOCODE_COLUMN_CHANGE]
         const country = columns[UNLOCODE_COLUMN_COUNTRY]
+        const countryName = countries[country]
         const location = columns[UNLOCODE_COLUMN_LOCATION]
         const unlocode = `${country}${location}`
         const city = columns[UNLOCODE_COLUMN_CITY]
@@ -55,7 +65,7 @@ export async function readCsv(improved = false) {
         const coordinates = columns[UNLOCODE_COLUMN_COORDINATES]
         const remarks = columns[UNLOCODE_COLUMN_REMARKS]
 
-        const unlocodeEntry = { change, city, country, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, status, "function": function_, coordinates, date, iata, unlocode, remarks };
+        const unlocodeEntry = { change, city, country, countryName, nameWithoutDiacritics, location, subdivisionCode, subdivisionName, status, "function": function_, coordinates, date, iata, unlocode, remarks };
         if (improved) {
             const source = columns[13]
             csvDatabase[unlocode] = {
