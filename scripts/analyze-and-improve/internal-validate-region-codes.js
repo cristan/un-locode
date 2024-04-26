@@ -3,7 +3,7 @@ import {convertToDecimal} from "./util/coordinatesConverter.js";
 
 async function validateRegionCodes() {
     const csvDatabase = await readCsv(true)
-    const subdivisions = readSubdivisionData()
+    // const subdivisions = readSubdivisionData()
 
     let count = 0
     let allCount = 0

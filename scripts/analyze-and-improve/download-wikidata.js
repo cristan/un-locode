@@ -33,14 +33,6 @@ const sparqlQuery = `
       OPTIONAL {
         ?item wdt:P131 ?subdivisionEntity1.
         OPTIONAL { ?subdivisionEntity1 wdt:P300 ?subdivisionCode1. }
-        OPTIONAL {
-          ?subdivisionEntity1 wdt:P131 ?subdivisionEntity2.
-          OPTIONAL { ?subdivisionEntity2 wdt:P300 ?subdivisionCode2. }
-          OPTIONAL {
-            ?subdivisionEntity2 wdt:P131 ?subdivisionEntity3.
-            OPTIONAL { ?subdivisionEntity3 wdt:P300 ?subdivisionCode3. }
-          }
-        }
       }
       SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
     }
@@ -48,6 +40,16 @@ const sparqlQuery = `
     LIMIT ${amountPerRequest}
     OFFSET $offset
 `
+/*
+OPTIONAL {
+          ?subdivisionEntity1 wdt:P131 ?subdivisionEntity2.
+          OPTIONAL { ?subdivisionEntity2 wdt:P300 ?subdivisionCode2. }
+          OPTIONAL {
+            ?subdivisionEntity2 wdt:P131 ?subdivisionEntity3.
+            OPTIONAL { ?subdivisionEntity3 wdt:P300 ?subdivisionCode3. }
+          }
+        }
+ */
 
 const endpointUrl = `https://query.wikidata.org/sparql?format=json&flavor=dump`
 const coordsRegex = /Point\(([-\d\.]*)\s([-\d\.]*)\)/

@@ -105,6 +105,7 @@ export const UNLOCODE_BEST =[
     "ITRMG",// Name should probably be changed from Rio Maggiore to Riomaggiore, but the coordinates match
     "ITFDB",
     "JPSWR",
+    "JPTOA",
     "LSMPS",
     "MXAOE",
     "MXACC",
@@ -298,6 +299,8 @@ export const UNLOCODE_BEST =[
     "ZAOLI",
     "ZAZEK",
     "INDMA",
+    "INSIK", // Probably a typo: Sika vs Sikka
+    "INJAY",
     "AOCUI", // Apparently, the coordinates point to the correct Port of Cuio
     "MYANG", // I'm not actually sure, but I don't see any evidence where else it could be
     "NGANA", // It's an oil terminal: it should be in the middle of the ocean
@@ -305,7 +308,6 @@ export const UNLOCODE_BEST =[
     "MXCNT",
     "THERA",
     "MXPIC",
-    "INSIK", // Probably a typo: Sika vs Sikka
     "CNJLY",
     "CNXIJ", // A little weird, since it's in the middle of the ocean, but it matches https://shipnext.com/port/xijiang-marine-terminal-cnxij-chn and atobviac, so I guess it's fine?
     "CNTZO",
@@ -323,4 +325,5 @@ export const UNLOCODE_BEST =[
     "GBMKO",// Tiny, but it matches
     "GBNGO",// Two Newingtons in Kent, but the other is next to a rail, so I'd guess it would have gotten Rail as a function if that were the one
     "INISP",
+    "THBPG",
 ]

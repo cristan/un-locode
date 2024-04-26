@@ -18,6 +18,8 @@ export const WIKIDATA_BEST = [
     "BECLM",// Quite the important one! Nominatim is pointing to the one in the wrong region!
     "CALAW",
     "VELSV",
+    "VEBAV",
+    "VESFX", // No port possible at the Nominatim coordinates
     "ESSAT",
     "EGAIS",
     "ESSAT",
@@ -26,8 +28,8 @@ export const WIKIDATA_BEST = [
     "PRLAM",
     "JPABO",
     "PHZAM",
-    "VEBAV",
     "CABAY",
+    "CASTC",
     "ITFAL",
     "CNHNK",
     "RUSTY",
@@ -109,6 +111,7 @@ export const WIKIDATA_BEST = [
     "USSYW",
     "USUXY",
     "USFKL",
+    "USBPX",// Not sure if the Bayport Industrial District is meant, but it's at least in Texas
     "TREGZ",
     "TRAKS",
     "RUZHL",
@@ -126,8 +129,14 @@ export const WIKIDATA_BEST = [
     "AUSCG",
     "CNTJA",
     "CNCFG",
+    "CNHUS",
     "GBTIL",
     "PGTIZ",// There's no airport at the Nominatim one
+    "ARXPD",
+    "MXSCR",
+    "MNLTI",
+    "MXSCR",
+    "PKKHP",
 ]
 // There are 2 San Martino in Strada's! :O The one of the official coordinates, and the one in https://www.wikidata.org/wiki/Q42950
 // ITSPC https://maps.app.goo.gl/EARFzs2N9RaX3Cbv7 vs https://www.wikidata.org/wiki/Q42950
