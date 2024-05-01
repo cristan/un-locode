@@ -54,21 +54,25 @@ OPTIONAL {
 const endpointUrl = `https://query.wikidata.org/sparql?format=json&flavor=dump`
 const coordsRegex = /Point\(([-\d\.]*)\s([-\d\.]*)\)/
 
+async function runWikidataQuery(query) {
+    const queryUrl = `${endpointUrl}&query=${encodeURIComponent(query)}`
+
+    const fromWikidata = await fetch(queryUrl, {
+        headers: {
+            'User-Agent': 'Bot for github.com/cristan/improved-un-locodes'
+        }
+    })
+
+    return await fromWikidata.json();
+}
+
 async function downloadFromWikidata() {
     let offset = 0
     let allData = []
 
     while (true) {
         console.log(`Downloading Wikidata at offset: ${offset}`)
-        const queryUrl = `${endpointUrl}&query=${encodeURIComponent(sparqlQuery.replace('$offset', offset))}`
-
-        const fromWikidata = await fetch(queryUrl, {
-            headers: {
-                'User-Agent': 'Bot for github.com/cristan/improved-un-locodes'
-            }
-        })
-
-        const response = await fromWikidata.json()
+        const response = await runWikidataQuery(sparqlQuery.replace('$offset', offset))
 
         if (response.results.bindings.length === 0) {
             // No more data to fetch, break the loop
