@@ -1,6 +1,7 @@
-// Sometimes you basically have the same unlocode twice. In all of these cases, this is a mistake.
+// Sometimes you basically have the same unlocode twice. In pretty much all of these cases, this is a mistake.
 
 export const ALIASES = {
+    SKJAO: "SKJSV", // Jasova => Jasová
     AOVPE: "AONGV", // Ongiva => Ondjiva
     NLBNK: "NLBUK", // Bunnink => Bunnik
     NLBEW: "NLBLW", // Beiswijk => Bleiswijk
@@ -35,4 +36,7 @@ export const ALIASES = {
     ESPDZ: "ESLPD", // Pedraneras => Las Pedroñeras
     ESPNR: "ESPVO", // Penarrolla => Peñarroya Pueblonuevo
     ESPBN: "ESPBG", // Pueblo Nuevo del Guadian => Pueblonuevo del Guadiana
+
+    // No mistakes, but entries which are parts of another entry
+    ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
 }
