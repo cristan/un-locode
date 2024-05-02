@@ -11,6 +11,7 @@ import {UNLOCODE_BEST} from "./manual-unlocode-best.js";
 import {getInvalidRegionMessage, getNoRegionMessage} from "./util/region-validator.js";
 import {readWikidata} from "./util/wikidata-reader.js";
 import {detectCoordinates} from "./util/coordinate-detector.js";
+import {ALIASES} from "./manual-aliases.js";
 
 async function validateEntries() {
     // console.debug = function() {};
@@ -24,7 +25,7 @@ async function validateEntries() {
     const invalidRegionMessages = []
     const noSuggestionFoundMessages = []
     const newCoordinateLogs = []
-
+    const entriesToBeDeletedLogs = []
 
     const useHtml = true
     const maxDistance = 100
@@ -33,6 +34,12 @@ async function validateEntries() {
     })
     for (const entry of Object.values(filteredEntries)) {
         const unlocode = entry.unlocode
+
+        if (ALIASES[unlocode]) {
+            entriesToBeDeletedLogs.push(`https://unlocode.info/${unlocode} (${entry.city}) should be deleted in favor of https://unlocode.info/${ALIASES[unlocode]} (${csvDatabase[ALIASES[unlocode]].city})`)
+            continue
+        }
+
         const wikiEntry = wikiData[unlocode]
 
         const nominatimData = await getNominatimData(entry)
@@ -47,7 +54,7 @@ async function validateEntries() {
         }
 
         if (!entry.coordinates) {
-            const detected = await detectCoordinates(entry, nominatimData, wikiEntry, 100)
+            const detected = await detectCoordinates(unlocode, csvDatabase, wikiData, 100)
             if (!detected) {
                 noSuggestionFoundMessages.push(`https://unlocode.info/${entry.unlocode}: (${entry.city}): Entry could not be found and has no coordinates. Please validate if this entry should be kept`)
             } else {
@@ -96,6 +103,13 @@ async function validateEntries() {
     }
     for (const newCoordinateLog of newCoordinateLogs) {
         doLog(newCoordinateLog, useHtml)
+    }
+
+    if (entriesToBeDeletedLogs.length > 0) {
+        console.log(`<h1>Entries to be deleted</h1>`)
+    }
+    for (const entriesToBeDeletedLog of entriesToBeDeletedLogs) {
+        doLog(entriesToBeDeletedLog, useHtml)
     }
 
     if (noSuggestionFoundMessages.length > 0) {
