@@ -6,10 +6,18 @@ import {getNominatimData, readNominatimDataByCity} from "./nominatim-loader.js";
 import {ALIASES} from "../manual-aliases.js";
 
 export async function detectCoordinates(unlocode, csvDatabase, wikidataDatabase, maxDistance) {
+    if (ALIASES[unlocode]) {
+        const detectedCoordinates = await detectCoordinates(ALIASES[unlocode], csvDatabase, wikidataDatabase, maxDistance)
+        detectedCoordinates.type = "Other UN/LOCODE"
+        detectedCoordinates.source = unlocode
+        return detectedCoordinates
+    }
+
     const entry = csvDatabase[unlocode]
     const nominatimData = await getNominatimData(entry)
     const decimalCoordinates = convertToDecimal(entry.coordinates)
     const wikiDataEntry = wikidataDatabase[unlocode]
+
 
     if (WIKIDATA_BEST.includes(unlocode) || (!nominatimData && wikiDataEntry)) {
         if (decimalCoordinates && getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiDataEntry.lat, wikiDataEntry.lon) < maxDistance) {
