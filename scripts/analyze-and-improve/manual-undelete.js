@@ -1,5 +1,5 @@
 // Entries which have been deleted by now, but the old (already deleted) entry is still used in the wild
 
-export const USED_DELETIONS = {
+export const DELETIONS_STILL_IN_USE = {
     CNTAG: "CNTAC" // Taicang Port
 }
