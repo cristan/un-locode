@@ -9,7 +9,7 @@ export async function detectCoordinates(unlocode, csvDatabase, wikidataDatabase,
     if (ALIASES[unlocode]) {
         const detectedCoordinates = await detectCoordinates(ALIASES[unlocode], csvDatabase, wikidataDatabase, maxDistance)
         detectedCoordinates.type = "Other UN/LOCODE"
-        detectedCoordinates.source = unlocode
+        detectedCoordinates.source = ALIASES[unlocode]
         return detectedCoordinates
     }
 

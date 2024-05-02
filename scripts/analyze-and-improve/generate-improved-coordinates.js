@@ -43,6 +43,7 @@ async function generateImprovedCoordinates() {
             writeCsv(dataOut, entries)
         } else if (detectedCoordinates.type === "Other UN/LOCODE") {
             entries.push("N/A (coordinate of another UN/LOCODE used)", detectedCoordinates.source)
+            entries[10] = detectedCoordinates.coordinates
             writeCsv(dataOut, entries)
         } else {
             let distance = "N/A (no UN/LOCODE)"
