@@ -36,7 +36,9 @@ export const ALIASES = {
     ESPDZ: "ESLPD", // Pedraneras => Las Pedroñeras
     ESPNR: "ESPVO", // Penarrolla => Peñarroya Pueblonuevo
     ESPBN: "ESPBG", // Pueblo Nuevo del Guadian => Pueblonuevo del Guadiana
+    PKQCT: "PKBQM", // Qasim International Container Terminal/Karachi => Muhammad Bin Qasim/Karachi
 
     // No mistakes, but entries which are parts of another entry
     ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
+    MYLPK: "MYPKG", // Is the Northport of Port Klang
 }
