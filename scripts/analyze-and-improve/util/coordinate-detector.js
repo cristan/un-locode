@@ -2,11 +2,14 @@ import {WIKIDATA_BEST} from "../manual-wikidata-best.js";
 import {convertToDecimal, convertToUnlocode, getDistanceFromLatLonInKm} from "./coordinatesConverter.js";
 import {UNLOCODE_BEST} from "../manual-unlocode-best.js";
 import {downloadByCityIfNeeded} from "./nominatim-downloader.js";
-import {readNominatimDataByCity} from "./nominatim-loader.js";
+import {getNominatimData, readNominatimDataByCity} from "./nominatim-loader.js";
+import {ALIASES} from "../manual-aliases.js";
 
-export async function detectCoordinates(entry, nominatimData, wikiDataEntry, maxDistance) {
-    const unlocode = entry.unlocode
+export async function detectCoordinates(unlocode, csvDatabase, wikidataDatabase, maxDistance) {
+    const entry = csvDatabase[unlocode]
+    const nominatimData = await getNominatimData(entry)
     const decimalCoordinates = convertToDecimal(entry.coordinates)
+    const wikiDataEntry = wikidataDatabase[unlocode]
 
     if (WIKIDATA_BEST.includes(unlocode) || (!nominatimData && wikiDataEntry)) {
         if (decimalCoordinates && getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiDataEntry.lat, wikiDataEntry.lon) < maxDistance) {

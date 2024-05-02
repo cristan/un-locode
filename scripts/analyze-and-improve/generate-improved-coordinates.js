@@ -1,6 +1,5 @@
 import {readCsv} from "./util/readCsv.js";
 import {convertToUnlocode, getDistanceFromLatLonInKm} from "./util/coordinatesConverter.js";
-import {getNominatimData} from "./util/nominatim-loader.js";
 import fs from "node:fs";
 import {readWikidata} from "./util/wikidata-reader.js";
 import {detectCoordinates} from "./util/coordinate-detector.js";
@@ -16,11 +15,8 @@ async function generateImprovedCoordinates() {
     let correctedCoordinates = 0
     let newlyAddedCoordinates = 0
     for (const unlocode of Object.keys(csvDatabase)) {
-        // A little wasteful: not needed in case it matches WIKIDATA_BEST or UNLOCODE_BEST.
-        // Not too bad though: there are not too many in there
         const entry = csvDatabase[unlocode]
-        const nominatimData = await getNominatimData(entry)
-        const detectedCoordinates = await detectCoordinates(entry, nominatimData, wikidataDatabase[unlocode], 100)
+        const detectedCoordinates = await detectCoordinates(unlocode, csvDatabase, wikidataDatabase, 100)
 
         const entries = [entry.change, entry.country, entry.location,entry.city,entry.nameWithoutDiacritics,entry.subdivisionCode,entry.status,entry.function,entry.date,entry.iata,entry.coordinates,entry.remarks]
         if (!detectedCoordinates) {
