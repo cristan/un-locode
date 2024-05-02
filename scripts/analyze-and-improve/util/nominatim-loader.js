@@ -72,7 +72,7 @@ function readNominatimDataByRegion(entry) {
     // Example: this goes wrong at https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=en&addressdetails=1&limit=20&city=Laocheng&country=CN&state=CN-HI
     // Which also returns data in HA even though the provided state is CN-HI.
     const parsedAndFiltered = parsed.filter(nm => getSubdivisionCode(nm) === entry.subdivisionCode)
-    const withoutUselessEntries = filterOutUselessEntries(parsedAndFiltered)
+    const withoutUselessEntries = filterOutUselessEntries(parsedAndFiltered, country)
     if (withoutUselessEntries.length === 0) {
         return undefined
     }
@@ -88,7 +88,7 @@ export function readNominatimDataByCity(unlocode) {
     if (byCity === "[]") {
         return undefined
     } else {
-        const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byCity))
+        const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byCity), country)
         if (withoutUselessEntries.length === 0) {
             return undefined
         }
@@ -108,7 +108,7 @@ export function readNominatimDataByQuery(unlocode) {
     if (byQuery === "[]") {
         return undefined
     } else {
-        const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byQuery))
+        const withoutUselessEntries = filterOutUselessEntries(JSON.parse(byQuery), country)
         // Let's filter out entries from other countries just in case: who knows what kind of results searching by query returns
         const inCorrectCountry = withoutUselessEntries.filter(nm => nm.address.country_code.toUpperCase() === country)
         if (inCorrectCountry.length === 0) {
@@ -121,7 +121,7 @@ export function readNominatimDataByQuery(unlocode) {
     }
 }
 
-function filterOutUselessEntries(nominatimResult) {
+function filterOutUselessEntries(nominatimResult, countryCode) {
     // Filter out anything which isn't a place, a boundary or a landuse (CNYTN)
     // TODO: this might be problematic! I only detected that I needed landuse by accident
     //  Also, maybe not use all landuses? The ones with type="industrial" we definitely need, but maybe we don't need type="commercial" (AESZS)
@@ -143,7 +143,8 @@ function filterOutUselessEntries(nominatimResult) {
         return !veryCloseExists
     })
 
-    return withoutVeryClosePlaces
+    // The query for MYLPK returns somewhere in New York. Filter out anything which isn't in this country
+    return withoutVeryClosePlaces.filter(n => n.address.country_code.toUpperCase() === countryCode)
 }
 
 function addConvenienceAttributes(nominatimResult) {
