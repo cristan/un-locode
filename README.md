@@ -12,7 +12,7 @@ Problems like typos (AUMID), pointing to the wrong country (CKPZK) and just flat
 This project aims to solve most of these cases by combining the data with data from OpenStreetMap's [Nominatim](https://nominatim.org/release-docs/latest/api/Overview/) and [Wikidata](https://www.wikidata.org/).
 
 ## CSV with improved locations
-You can find the improved list as [code-list-improved.csv](data/code-list-improved.csv). It has both corrected coordinates, as well as just way more of them (98.04%).
+You can find the improved list as [code-list-improved.csv](data/code-list-improved.csv). It has both corrected coordinates, as well as just way more of them (98.1%).
 
 ## How the improved list is created
 * When the coordinates can't be found with Nominatim, choose unlocode
