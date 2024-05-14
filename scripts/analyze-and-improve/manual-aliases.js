@@ -1,4 +1,4 @@
-// Sometimes you basically have the same unlocode twice. In pretty much all of these cases, this is a mistake.
+// Sometimes you basically have the same unlocode twice. In almost all of these cases, one is correct and the other is incorrectly spelled.
 
 export const ALIASES = {
     SKJAO: "SKJSV", // Jasova => Jasová
@@ -6,6 +6,9 @@ export const ALIASES = {
     NLBNK: "NLBUK", // Bunnink => Bunnik
     NLBEW: "NLBLW", // Beiswijk => Bleiswijk
     ZAGNB: "ZAGAA", // Gans Bay => Gansbaai
+    PKQCT: "PKBQM", // Qasim International Container Terminal/Karachi => Muhammad Bin Qasim/Karachi
+    USLMW: "USXHQ", // Lakemills => Lake Mills
+    USDFN: "USDU5", // Both called "De Funiak Springs"
     ARPNL: "ARBHI", // Puerto Nacional/Bahia Blanca => Bahía Blanca
     ATWDD: "ATWSS", // Weissenstein ob der Drau => Weissenstein
     AUCAL: "AUCUD", // Caloundra Head => Caloundra
@@ -36,7 +39,17 @@ export const ALIASES = {
     ESPDZ: "ESLPD", // Pedraneras => Las Pedroñeras
     ESPNR: "ESPVO", // Penarrolla => Peñarroya Pueblonuevo
     ESPBN: "ESPBG", // Pueblo Nuevo del Guadian => Pueblonuevo del Guadiana
-    PKQCT: "PKBQM", // Qasim International Container Terminal/Karachi => Muhammad Bin Qasim/Karachi
+    ESPSM: "ESESM", // Puerto de Santa Maria => El Puerto de Santa María
+    ESRDP: "ESPGO", // Renedo de Pielago => Pielagos (though the real name is Renedo de Piélagos)
+    ESSDB: "ESADQ", // San Andreas de La Barca => San Andrés de la Barca (though the real name is Sant Andreu de la Barca)
+    ESSBG: "ESZLU", // San Bartolome D/Grau => Sant Bartomeu del Grau
+    ESSJM: "ESJDM", // San Juan D Moro => Sant Joan De Moró
+    ESSJN: "ESSJX", // San Juan de Nivea => San Juan de Nieva
+    ESSJF: "ESSJL", // San Juan Le Fonts => Sant Joan Les Fonts
+    INWGC: "INWRA", // Warrangal => Warangal
+    INVIG: "INVTZ", // Vizagapatanam => Visakhapatnam
+    INUMB: "INUMG", // Umbergoan => Umbergaon
+    INTRZ: "INTRI", // Tiruchirapalli => Tiruchirappalli
 
     // No mistakes, but entries which are parts of another entry
     ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
