@@ -26,11 +26,12 @@ async function validateEntries() {
     const noSuggestionFoundMessages = []
     const newCoordinateLogs = []
     const entriesToBeDeletedLogs = []
+    const wrongNameLogs = []
 
     const useHtml = true
     const maxDistance = 100
     const filteredEntries = Object.values(csvDatabase).filter(entry => {
-        return entry.country === "GB"
+        return entry.country === "IN"
     })
     for (const entry of Object.values(filteredEntries)) {
         const unlocode = entry.unlocode
@@ -69,6 +70,13 @@ async function validateEntries() {
                     })
                     .join(" or ")
                 newCoordinateLogs.push(`https://unlocode.info/${unlocode} (${entry.city}) Coordinates should be set to ${optionsString}`)
+            }
+        }
+
+        // TODO: also look at Nominatim
+        if (wikiEntry) {
+            if(wikiEntry.itemLabel !== entry.city && !wikiEntry.alternatives.some(a => a.itemLabel !== entry.city) && !wikiEntry.itemLabel.includes(entry.city) && !entry.city.includes(wikiEntry.itemLabel)) {
+                wrongNameLogs.push(`https://unlocode.info/${unlocode}: (${entry.city}): Name should be set to ${wikiEntry.itemLabel}. Source: ${wikiEntry.sourceUrl}`)
             }
         }
     }
@@ -133,6 +141,13 @@ async function validateEntries() {
     }
     for (const noDateLog of noDateLogs) {
         doLog(noDateLog, useHtml)
+    }
+
+    if (wrongNameLogs.length > 0) {
+        console.log(`<h1>Entries without wrong names</h1>`)
+    }
+    for (const wrongNameLog of wrongNameLogs) {
+        doLog(wrongNameLog, useHtml)
     }
 
     // const coordinateGroups = {}; // Object to store groups of entries with the same coordinates
