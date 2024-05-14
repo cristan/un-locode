@@ -24,7 +24,7 @@ WHERE {
 LIMIT 1000
  */
 
-const amountPerRequest = 6000
+const amountPerRequest = 6500
 const sparqlQuery = `
     SELECT DISTINCT ?item ?unlocode ?itemLabel ?coords ?subdivisionCode1 ?subdivisionCode2 ?subdivisionCode3
     WHERE {
