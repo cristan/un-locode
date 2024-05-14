@@ -46,7 +46,7 @@ export async function detectCoordinates(unlocode, csvDatabase, wikidataDatabase,
         }
 
         // Check if there's another result than the first one who is close. If yes, return that
-        const closeResult =  await findCloseResult(maxDistance, nominatimResult, decimalCoordinates, entry, nominatimData, unlocode);
+        const closeResult = await findCloseResult(maxDistance, nominatimResult, decimalCoordinates, entry, nominatimData, unlocode);
         if (closeResult) {
             return closeResult
         }
