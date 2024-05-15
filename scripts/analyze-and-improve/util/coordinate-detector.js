@@ -20,7 +20,7 @@ export async function detectCoordinates(unlocode, csvDatabase, wikidataDatabase,
 
 
     if (WIKIDATA_BEST.includes(unlocode) || (!nominatimData && wikiDataEntry)) {
-        if (decimalCoordinates && getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiDataEntry.lat, wikiDataEntry.lon) < maxDistance) {
+        if (decimalCoordinates && getDistanceFromLatLonInKm(decimalCoordinates.lat, decimalCoordinates.lon, wikiDataEntry.lat, wikiDataEntry.lon) < Math.min(10, maxDistance)) {
             // When we have a Wikidata entry, check if it's close to the original unlocode one. If yes, just go for unlocode
             return getUnlocodeResult(entry, decimalCoordinates)
         }
