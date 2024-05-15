@@ -131,6 +131,7 @@ export const WIKIDATA_BEST = [
     "CNCFG",
     "CNHUS",
     "GBTIL",
+    "GBABN",// Typo in region: NTH vs NHT
     "PGTIZ",// There's no airport at the Nominatim one
     "ARXPD",
     "MXSCR",
