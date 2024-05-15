@@ -24,4 +24,4 @@ async function validateRegionCodes() {
 }
 
 validateRegionCodes()
-// I now have to do ESPSM onwards
+// I now have to do ESSBL onwards

@@ -47,9 +47,17 @@ export const ALIASES = {
     ESSJN: "ESSJX", // San Juan de Nivea => San Juan de Nieva
     ESSJF: "ESSJL", // San Juan Le Fonts => Sant Joan Les Fonts
     INWGC: "INWRA", // Warrangal => Warangal
+    ESSQU: "ESSQV", // San Quirico Del Vall => Sant Quirze del Valles
+    ESZLR: "ESSQV", // Sant Quirze Valles => Sant Quirze del Valles
+    ESSSR: "ESZLT", // San Sebastian D/L Reyes => San Sebastian de los Reyes
     INVIG: "INVTZ", // Vizagapatanam => Visakhapatnam
     INUMB: "INUMG", // Umbergoan => Umbergaon
     INTRZ: "INTRI", // Tiruchirapalli => Tiruchirappalli
+    GBLEW: "GBEDG", // Edgeware => Edgware? One is in Harrow (HRW) and the other is in London, City of (LND), but I'm pretty sure it's the same thing.
+    GBKRA: "GBKKD", // Kilkardy => Kirkcaldy
+    GBGDF: "GBDRF", // Great Driffield => Driffield
+    GBOAK: "GBOKM", // Oakhamness => Oakham
+    GBMBN: "GBWIM", // Wimeborne => Wimborne Minster
 
     // No mistakes, but entries which are parts of another entry
     ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
