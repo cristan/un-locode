@@ -106,18 +106,25 @@ async function validateEntries() {
         doLog(noRegionMessage, useHtml)
     }
 
-    if (newCoordinateLogs.length > 0) {
-        console.log(`<h1>Suggested new coordinates</h1>`)
-    }
-    for (const newCoordinateLog of newCoordinateLogs) {
-        doLog(newCoordinateLog, useHtml)
-    }
-
     if (entriesToBeDeletedLogs.length > 0) {
         console.log(`<h1>Entries to be deleted</h1>`)
     }
     for (const entriesToBeDeletedLog of entriesToBeDeletedLogs) {
         doLog(entriesToBeDeletedLog, useHtml)
+    }
+
+    if (wrongNameLogs.length > 0) {
+        console.log(`<h1>Entries with incorrect names</h1>`)
+    }
+    for (const wrongNameLog of wrongNameLogs) {
+        doLog(wrongNameLog, useHtml)
+    }
+
+    if (newCoordinateLogs.length > 0) {
+        console.log(`<h1>Suggested new coordinates</h1>`)
+    }
+    for (const newCoordinateLog of newCoordinateLogs) {
+        doLog(newCoordinateLog, useHtml)
     }
 
     if (noSuggestionFoundMessages.length > 0) {
@@ -141,13 +148,6 @@ async function validateEntries() {
     }
     for (const noDateLog of noDateLogs) {
         doLog(noDateLog, useHtml)
-    }
-
-    if (wrongNameLogs.length > 0) {
-        console.log(`<h1>Entries without wrong names</h1>`)
-    }
-    for (const wrongNameLog of wrongNameLogs) {
-        doLog(wrongNameLog, useHtml)
     }
 
     // const coordinateGroups = {}; // Object to store groups of entries with the same coordinates
