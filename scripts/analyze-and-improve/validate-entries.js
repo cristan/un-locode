@@ -82,14 +82,14 @@ async function validateEntries() {
     }
 
     if (coordinatesLogs.length > 0) {
-        console.log("<h1>Location issues</h1>")
+        console.log(`<h1>Location issues (${coordinatesLogs.length})</h1>`)
     }
     for (const coordinatesLog of coordinatesLogs) {
         doLog(coordinatesLog + "\n", useHtml)
     }
 
     if (invalidRegionMessages.length > 0) {
-        console.log("<h1>Non-valid region codes used</h1>")
+        console.log(`<h1>Non-valid region codes used (${invalidRegionMessages.length})</h1>`)
     }
     for (const invalidRegionMessage of invalidRegionMessages) {
         doLog(invalidRegionMessage, useHtml)
@@ -100,35 +100,35 @@ async function validateEntries() {
     }).filter(noRegionMessage => !!noRegionMessage)
 
     if (noRegionMessages.length > 0) {
-        console.log(`<h1>Entries without a region</h1>`)
+        console.log(`<h1>Entries without a region (${noRegionMessages.length})</h1>`)
     }
     for (const noRegionMessage of noRegionMessages) {
         doLog(noRegionMessage, useHtml)
     }
 
     if (entriesToBeDeletedLogs.length > 0) {
-        console.log(`<h1>Entries to be deleted</h1>`)
+        console.log(`<h1>Entries to be deleted (${entriesToBeDeletedLogs.length})</h1>`)
     }
     for (const entriesToBeDeletedLog of entriesToBeDeletedLogs) {
         doLog(entriesToBeDeletedLog, useHtml)
     }
 
     if (wrongNameLogs.length > 0) {
-        console.log(`<h1>Entries with incorrect names</h1>`)
+        console.log(`<h1>Entries with incorrect names (${wrongNameLogs.length})</h1>`)
     }
     for (const wrongNameLog of wrongNameLogs) {
         doLog(wrongNameLog, useHtml)
     }
 
     if (newCoordinateLogs.length > 0) {
-        console.log(`<h1>Suggested new coordinates</h1>`)
+        console.log(`<h1>Suggested new coordinates (${newCoordinateLogs.length})</h1>`)
     }
     for (const newCoordinateLog of newCoordinateLogs) {
         doLog(newCoordinateLog, useHtml)
     }
 
     if (noSuggestionFoundMessages.length > 0) {
-        console.log(`<h1>Entries who could not be found</h1>`)
+        console.log(`<h1>Entries who could not be found (${noSuggestionFoundMessages.length})</h1>`)
     }
     for (const noSuggestionFoundMessage of noSuggestionFoundMessages) {
         doLog(noSuggestionFoundMessage, useHtml)
@@ -136,7 +136,7 @@ async function validateEntries() {
 
     const noStatusLogs = Object.values(filteredEntries).flatMap(csvEntry => csvEntry.status ? [] : `https://unlocode.info/${csvEntry.unlocode}`)
     if (noStatusLogs.length > 0) {
-        console.log(`<h1>Entries without a status</h1>`)
+        console.log(`<h1>Entries without a status (${noStatusLogs.length})</h1>`)
     }
     for (const noStatusLog of noStatusLogs) {
         doLog(noStatusLog, useHtml)
@@ -144,7 +144,7 @@ async function validateEntries() {
 
     const noDateLogs = Object.values(filteredEntries).flatMap(csvEntry => csvEntry.date ? [] : `https://unlocode.info/${csvEntry.unlocode}`)
     if (noDateLogs.length > 0) {
-        console.log(`<h1>Entries without date</h1>`)
+        console.log(`<h1>Entries without date (${noDateLogs.length})</h1>`)
     }
     for (const noDateLog of noDateLogs) {
         doLog(noDateLog, useHtml)
@@ -172,10 +172,7 @@ async function validateEntries() {
     //     }
     // }
 
-    // TODO: show number of results after each header
     // TODO: take into account wikidata for the coordinate suggestions (not for GB, but definitely for IT)
-    // TODO: Clickable coordinates?
-    // TODO: Wrong name?
     // TODO: Determine when an entry has been added in case of missing date?
     // TODO: Wrong status? (like Request Rejected or Request under Consideration, while it's more than 10 years old)
 }
