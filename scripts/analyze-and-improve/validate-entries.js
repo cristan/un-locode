@@ -172,6 +172,7 @@ async function validateEntries() {
     //     }
     // }
 
+    // TODO: Split location issues into pressing (1000km off plus) and regular location issues
     // TODO: take into account wikidata for the coordinate suggestions (not for GB, but definitely for IT)
     // TODO: Determine when an entry has been added in case of missing date?
     // TODO: Wrong status? (like Request Rejected or Request under Consideration, while it's more than 10 years old)
