@@ -24,4 +24,4 @@ async function validateRegionCodes() {
 }
 
 validateRegionCodes()
-// I now have to do ETAMH onwards
+// I now have to do IDMUB onwards

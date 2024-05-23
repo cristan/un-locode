@@ -54,15 +54,22 @@ export const ALIASES = {
     ESVCP: "ESZMX", // Valencia de la Concepcion => Valencina de la Concepcion
     ESDGS: "ESVPR", // Villandangos => Villadangos del Páramo
     ESVAK: "ESEVI", // Visos Del Alcor => El Viso del Alcor
+    ESSXX: "ESHVC", // Sangenjo => Sanxenxo
     INWGC: "INWRA", // Warrangal => Warangal
     INVIG: "INVTZ", // Vizagapatanam => Visakhapatnam
     INUMB: "INUMG", // Umbergoan => Umbergaon
     INTRZ: "INTRI", // Tiruchirapalli => Tiruchirappalli
+    INDAE: "INDEP", // Daparizo => Deparizo (should be called Daporijo, so both are wrong, I like INDEP better though because it matches the IATA of the airport)
+    GAMYB: "GAMBA", // Mayoumba => Mayumba
     GBLEW: "GBEDG", // Edgeware => Edgware? One is in Harrow (HRW) and the other is in London, City of (LND), but I'm pretty sure it's the same thing.
     GBKRA: "GBKKD", // Kilkardy => Kirkcaldy
     GBGDF: "GBDRF", // Great Driffield => Driffield
     GBOAK: "GBOKM", // Oakhamness => Oakham
     GBMBN: "GBWIM", // Wimeborne => Wimborne Minster
+    GRSOR: "GRTSS", // Soupri => Soúrpi
+    GRSTY: "GRSYS", // Stylinda => Stylis (Stylída)
+    GUAGA: "GUHGT", // Agana => Hagatna (should be spelled Hagåtña)
+    IDBJU: "IDBNI", // Banjuwangi, Java => Banyuwangi
 
     // No mistakes, but entries which are parts of another entry
     ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
