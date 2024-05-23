@@ -2,5 +2,5 @@
 
 export const DELETIONS_STILL_IN_USE = {
     CNTAG: "CNTAC", // Taicang Port
-    VNCMT: "VNTOT", // Cai Mep
+    VNCMP: "VNTOT", // Cai Mep
 }
