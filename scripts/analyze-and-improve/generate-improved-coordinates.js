@@ -61,7 +61,7 @@ async function generateImprovedCoordinates() {
     for (const deletedUnlocode of Object.keys(DELETIONS_STILL_IN_USE)) {
         const newUnlocode = DELETIONS_STILL_IN_USE[deletedUnlocode]
         const entry = csvDatabase[newUnlocode]
-        const entries = ["X", entry.country, deletedUnlocode.substring(2), entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, "XX", entry.function, entry.date, entry.iata, entry.coordinates, `Use ${newUnlocode}`, "N/A", newUnlocode]
+        const entries = ["X", deletedUnlocode.substring(0, 2), deletedUnlocode.substring(2), entry.city, entry.nameWithoutDiacritics, entry.subdivisionCode, "XX", entry.function, entry.date, entry.iata, entry.coordinates, `Use ${newUnlocode}`, "N/A", newUnlocode]
         writeCsv(dataOut, entries)
     }
     console.log(`Created ${filename} with ${correctedCoordinates} corrected coordinates and ${newlyAddedCoordinates} new ones`)
