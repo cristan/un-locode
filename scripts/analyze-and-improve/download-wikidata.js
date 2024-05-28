@@ -24,7 +24,6 @@ WHERE {
 LIMIT 1000
  */
 
-const amountPerRequest = 6500
 const sparqlQuery = `
     SELECT DISTINCT ?item ?unlocode ?itemLabel ?coords ?subdivisionCode1 ?subdivisionCode2 ?subdivisionCode3
     WHERE {
@@ -37,8 +36,6 @@ const sparqlQuery = `
       SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
     }
     ORDER BY ?item
-    LIMIT ${amountPerRequest}
-    OFFSET $offset
 `
 /*
 OPTIONAL {
@@ -67,45 +64,32 @@ async function runWikidataQuery(query) {
 }
 
 async function downloadFromWikidata() {
-    let offset = 0
-    let allData = []
+    const response = await runWikidataQuery(sparqlQuery)
 
-    while (true) {
-        console.log(`Downloading Wikidata at offset: ${offset}`)
-        const response = await runWikidataQuery(sparqlQuery.replace('$offset', offset))
+    const simplifiedData = response.results.bindings
+        .filter(result => {
+            const match = coordsRegex.exec(result.coords.value)
+            if (!match || match.length < 3) {
+                console.warn(JSON.stringify(result))
+                return false
+            }
+            return true
+        })
+        .map(result => ({
+            item: result.item.value,
+            itemLabel: result.itemLabel.value,
+            lat: extractCoordinates(result.coords.value).lat,
+            lon: extractCoordinates(result.coords.value).lon,
+            unlocode: result.unlocode.value,
+            subdivisionCode1: result.subdivisionCode1?.value,
+            subdivisionCode2: result.subdivisionCode2?.value,
+            subdivisionCode3: result.subdivisionCode3?.value,
+        }))
 
-        if (response.results.bindings.length === 0) {
-            // No more data to fetch, break the loop
-            break
-        }
-
-        const simplifiedData = response.results.bindings
-            .filter(result => {
-                const match = coordsRegex.exec(result.coords.value)
-                if (!match || match.length < 3) {
-                    console.warn(JSON.stringify(result))
-                    return false
-                }
-                return true
-            })
-            .map(result => ({
-                item: result.item.value,
-                itemLabel: result.itemLabel.value,
-                lat: extractCoordinates(result.coords.value).lat,
-                lon: extractCoordinates(result.coords.value).lon,
-                unlocode: result.unlocode.value,
-                subdivisionCode1: result.subdivisionCode1?.value,
-                subdivisionCode2: result.subdivisionCode2?.value,
-                subdivisionCode3: result.subdivisionCode3?.value,
-            }))
-
-        allData = allData.concat(simplifiedData)
-        offset += amountPerRequest // Increase the offset for the next iteration
-    }
 
     // Sort the data, so they will have a consistent order
     // This will help a lot with handling the wikidata dataset in Git
-    const allDataSorted = allData.sort(function (a, b) {
+    const allDataSorted = simplifiedData.sort(function (a, b) {
         return (a.unlocode + a.item > b.unlocode + a.item) ? 1 : -1
     })
 
