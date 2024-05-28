@@ -3,4 +3,8 @@
 export const DELETIONS_STILL_IN_USE = {
     CNTAG: "CNTAC", // Taicang Port
     VNCMP: "VNTOT", // Cai Mep
+    CNQYN: "CNQGY", // Qingyuan
+    THSPR: "THSAP", // Samut Prakan
+    CNTIZ: "CNTZO", // Taizhou
+    HITHK: "HKHKG", // Terminal code of Hong Kong Int'l Terminals (so not even a UNLOCODE) => Hong Kong
 }

@@ -70,6 +70,10 @@ export const ALIASES = {
     GRSTY: "GRSYS", // Stylinda => Stylis (Stylída)
     GUAGA: "GUHGT", // Agana => Hagatna (should be spelled Hagåtña)
     IDBJU: "IDBNI", // Banjuwangi, Java => Banyuwangi
+    MASEK: "MAERH", // Ksar Es Souk => Errachidia (that's the new name)
+    PKHRU: "PKHPR", // Haripur Hazara => Haripur
+    PKJHC: "PKJNG", // Jhang City => Jhang
+    PLOAI: "PLLOK", // Omiankim => Lomianki
 
     // No mistakes, but entries which are parts of another entry
     ZAGTY: "ZAELS", // Gately is in East London (Oos-Londen)
