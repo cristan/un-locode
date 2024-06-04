@@ -56,6 +56,7 @@ export const ALIASES = {
     ESVAK: "ESEVI", // Visos Del Alcor => El Viso del Alcor
     ESSXX: "ESHVC", // Sangenjo => Sanxenxo
     INWGC: "INWRA", // Warrangal => Warangal
+    INGGA: "INGHA", // Gogha => Ghogha
     INVIG: "INVTZ", // Vizagapatanam => Visakhapatnam
     INUMB: "INUMG", // Umbergoan => Umbergaon
     INTRZ: "INTRI", // Tiruchirapalli => Tiruchirappalli

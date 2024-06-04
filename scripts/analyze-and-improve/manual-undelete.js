@@ -6,5 +6,7 @@ export const DELETIONS_STILL_IN_USE = {
     CNQYN: "CNQGY", // Qingyuan
     THSPR: "THSAP", // Samut Prakan
     CNTIZ: "CNTZO", // Taizhou
+
+    //TODO: currently buggy, doesn't generate the coordinates of Hong Kong.
     HITHK: "HKHKG", // Terminal code of Hong Kong Int'l Terminals (so not even a UNLOCODE) => Hong Kong
 }
