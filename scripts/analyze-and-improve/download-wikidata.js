@@ -25,17 +25,17 @@ LIMIT 1000
  */
 
 const sparqlQuery = `
-    SELECT DISTINCT ?item ?unlocode ?itemLabel ?coords ?subdivisionCode1 ?subdivisionCode2 ?subdivisionCode3
-    WHERE {
-      ?item wdt:P1937 ?unlocode.
-      ?item wdt:P625 ?coords.
-      OPTIONAL {
-        ?item wdt:P131 ?subdivisionEntity1.
-        OPTIONAL { ?subdivisionEntity1 wdt:P300 ?subdivisionCode1. }
-      }
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-    }
-    ORDER BY ?item
+SELECT DISTINCT ?item ?unlocode ?itemLabel ?coords ?subdivisionCode1
+WHERE {
+  ?item wdt:P1937 ?unlocode.
+  ?item wdt:P625 ?coords.
+  OPTIONAL {
+    ?item wdt:P131 ?subdivisionEntity1.
+    OPTIONAL { ?subdivisionEntity1 wdt:P300 ?subdivisionCode1. }
+  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+ORDER BY ?item
 `
 /*
 OPTIONAL {
