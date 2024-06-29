@@ -47,4 +47,4 @@ ODbL 1.0. http://osm.org/copyright
 CC-0 (No rights reserved)
 
 ### All other contents in this repo
-Public domain
+CC-0 (No rights reserved)
